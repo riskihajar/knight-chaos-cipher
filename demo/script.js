@@ -12,6 +12,8 @@ let timer = null;
 let lastMaterials = null;
 let lastIv = null;
 let lastPlainBlock = null;
+let lastMasterSeed = null;
+let lastRoundSeeds = null;
 let selectedByte = 0;
 
 const els = {
@@ -186,8 +188,10 @@ async function buildMaterials(key) {
   const masterSeed = await sha256(textEncoder.encode(key));
   const iv = (await sha256(concatBytes(masterSeed, textEncoder.encode("KCC-IV")))).slice(0, 16);
   const materials = [];
+  const roundSeeds = [];
   for (let round = 0; round < ROUNDS; round++) {
     const roundSeed = await sha256(concatBytes(masterSeed, intBytes(round)));
+    roundSeeds.push(roundSeed);
     const keyMaterial = await sha256(concatBytes(roundSeed, intBytes(0)));
     const roundKey = keyMaterial.slice(0, 16);
     const sbox = generateSbox(roundSeed, round);
@@ -195,7 +199,7 @@ async function buildMaterials(key) {
     const rotations = Array.from({ length: 16 }, (_, i) => ((roundSeed[i % roundSeed.length] + i + round) % 7) + 1);
     materials.push({ roundKey, sbox, inverseSbox: inverseArray(sbox), permutation, inversePermutation: inverseArray(permutation), rotations });
   }
-  return { materials, iv };
+  return { materials, iv, masterSeed, roundSeeds };
 }
 
 function diffuse(state, roundKey) {
@@ -277,7 +281,7 @@ function decryptBlock(block, materials) {
 }
 
 async function encryptAndTrace(plaintext, key) {
-  const { materials, iv } = await buildMaterials(key);
+  const { materials, iv, masterSeed, roundSeeds } = await buildMaterials(key);
   const padded = pkcs7Pad(textEncoder.encode(plaintext));
   let previous = iv;
   const ciphertext = new Uint8Array(padded.length);
@@ -297,7 +301,7 @@ async function encryptAndTrace(plaintext, key) {
     traces.push(blockTrace);
     previous = encrypted;
   }
-  return { ciphertext, traces, blockResults, materials, iv, padded };
+  return { ciphertext, traces, blockResults, materials, iv, padded, masterSeed, roundSeeds };
 }
 
 function decrypt(ciphertext, materials, iv) {
@@ -346,11 +350,27 @@ function renderDetail() {
   // Update label
   document.querySelector("#stepDetail span").textContent = `HITUNG MANUAL (Byte ${idx})`;
 
-  // Round key display
+  // Round key display with derivation values
+  const shortHex = (arr, len) => Array.from(arr).slice(0, len).map(b => b.toString(16).padStart(2, "0")).join("") + "...";
   if (mat) {
+    const rIdx = round - 1;
     els.roundKeyDisplay.textContent = Array.from(mat.roundKey, b => b.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    document.getElementById("roundKeyBox").querySelector("span").innerHTML =
+      `ROUND KEY (Round ${round})<br><small style="color:var(--muted);font-weight:400">` +
+      `1. masterSeed = SHA256("${els.key.value.slice(0, 20)}...")<br>` +
+      `   → <code style="font-size:10px">${shortHex(lastMasterSeed, 8)}</code><br>` +
+      `2. roundSeed = SHA256(masterSeed || ${rIdx})<br>` +
+      `   → <code style="font-size:10px">${shortHex(lastRoundSeeds[rIdx], 8)}</code><br>` +
+      `3. roundKey = SHA256(roundSeed || 0)[0:16]<br>` +
+      `   → nilai di atas</small>`;
   } else if (lastIv) {
-    els.roundKeyDisplay.textContent = "IV: " + Array.from(lastIv, b => b.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    els.roundKeyDisplay.textContent = Array.from(lastIv, b => b.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    document.getElementById("roundKeyBox").querySelector("span").innerHTML =
+      `IV (Initialization Vector)<br><small style="color:var(--muted);font-weight:400">` +
+      `1. masterSeed = SHA256("${els.key.value.slice(0, 20)}...")<br>` +
+      `   → <code style="font-size:10px">${shortHex(lastMasterSeed, 8)}</code><br>` +
+      `2. IV = SHA256(masterSeed || "KCC-IV")[0:16]<br>` +
+      `   → nilai di atas</small>`;
   }
 
   // Manual calculation for selected byte
@@ -373,14 +393,21 @@ function renderDetail() {
       calc += `${toBin(b0Before)} (0x${b0Before.toString(16).padStart(2, "0").toUpperCase()}) ← state\n`;
       calc += `${toBin(lastIv[idx])} (0x${lastIv[idx].toString(16).padStart(2, "0").toUpperCase()}) ← IV\n`;
       calc += `──────── XOR\n`;
-      calc += `${toBin(b0After)} (0x${b0After.toString(16).padStart(2, "0").toUpperCase()}) ← hasil`;
+      calc += `${toBin(b0After)} (0x${b0After.toString(16).padStart(2, "0").toUpperCase()}) ← hasil\n\n`;
+      calc += `IV dari mana?\n`;
+      calc += `IV = SHA256(SHA256(key) || "KCC-IV")[0:16]\n`;
+      calc += `→ deterministik: key sama = IV sama`;
       break;
     case "AddRoundKey":
+      const rIdx = round - 1;
       calc = `State[${idx}] XOR RoundKey[${idx}]\n`;
       calc += `${toBin(b0Before)} (0x${b0Before.toString(16).padStart(2, "0").toUpperCase()}) ← state\n`;
       calc += `${toBin(mat.roundKey[idx])} (0x${mat.roundKey[idx].toString(16).padStart(2, "0").toUpperCase()}) ← key\n`;
       calc += `──────── XOR\n`;
-      calc += `${toBin(b0After)} (0x${b0After.toString(16).padStart(2, "0").toUpperCase()}) ← hasil`;
+      calc += `${toBin(b0After)} (0x${b0After.toString(16).padStart(2, "0").toUpperCase()}) ← hasil\n\n`;
+      calc += `Round key dari mana?\n`;
+      calc += `roundSeed = SHA256(masterSeed || ${rIdx})\n`;
+      calc += `roundKey = SHA256(roundSeed || 0)[0:16]`;
       break;
     case "ChaoticSubBytes":
       calc = `S-Box lookup:\n`;
@@ -525,6 +552,8 @@ async function run() {
   blockCiphertexts = result.blockResults;
   lastMaterials = result.materials;
   lastIv = result.iv;
+  lastMasterSeed = result.masterSeed;
+  lastRoundSeeds = result.roundSeeds;
   currentBlock = 0;
   trace = allTraces[0];
   stepIndex = 0;

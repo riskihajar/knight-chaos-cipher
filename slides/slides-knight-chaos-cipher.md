@@ -102,23 +102,6 @@ Decryption: OK ✓
 - **Frequency:** tidak ada byte value yang dominan pada ciphertext.
 - **vs. Caesar/Vigenere:** KCC-128 memutus hubungan langsung plaintext–ciphertext melalui non-linear S-Box + permutation + diffusion.
 
-# Demo Interaktif
-
-- File: `demo/index.html`
-- **Block selector** — pilih block mana yang mau dilihat.
-- **Matrix 4×4** — klik cell untuk lihat hitung manual byte tersebut.
-- **Detail panel** — menampilkan XOR biner, S-Box lookup, rotation, per byte.
-- **Assembly view** — menampilkan bagaimana block-block digabung jadi ciphertext final.
-- **Timeline** — navigasi step-by-step per round.
-
-# Fitur Demo
-
-1. Konversi plaintext → byte (tabel ASCII lengkap)
-2. Hitung manual per byte (dynamic, klik cell manapun)
-3. Visualisasi round key, S-Box mapping, knight path
-4. Block selector untuk multi-block plaintext
-5. Concat visualization: block 1 + block 2 + ... = ciphertext
-
 # Keterbatasan
 
 - IV di-derive deterministic dari key (idealnya random).
@@ -132,13 +115,3 @@ Decryption: OK ✓
 - Knight's tour sebagai permutation → non-linear, game-based.
 - Chaotic map sebagai S-Box generator → dynamic per round.
 - Encryption-decryption bekerja benar, avalanche ~50%.
-- Demo interaktif menampilkan proses manual step-by-step.
-
-# Live Demo
-
-1. Buka `demo/index.html` di browser.
-2. Masukkan plaintext dan key.
-3. Klik **Encrypt & Animate**.
-4. Pilih block dari dropdown.
-5. Klik cell di matrix → lihat hitung manual.
-6. Navigasi step dengan **Prev / Play / Next**.

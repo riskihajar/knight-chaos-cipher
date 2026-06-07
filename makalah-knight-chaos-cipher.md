@@ -135,7 +135,7 @@ Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear crypt
 - Semua operation invertible sehingga decryption bekerja dengan benar
 
 **Keterbatasan:**
-- IV di-derive secara deterministic dari key (untuk konsistensi demo). Idealnya IV random dan disimpan bersama ciphertext
+- IV di-derive secara deterministic dari key. Idealnya IV random dan disimpan bersama ciphertext
 - Pengujian masih menggunakan sample kecil. Test dengan data lebih besar bisa memberi gambaran yang lebih akurat
 - Belum ada mekanisme authentication (MAC/HMAC). Cipher hanya menjamin confidentiality, belum integrity
 - Kualitas kriptografis S-Box (nonlinearity, differential uniformity) belum diuji secara formal
