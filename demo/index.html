@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knight-Chaos Cipher Interactive Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="panel controls">
+      <div class="panelBody">
+        <div>
+          <p class="eyebrow">Tugas 3 Cyber Security</p>
+          <h1>Knight-Chaos Cipher</h1>
+          <p class="meta">Muhammad Rizky Hajar · 24.55.2714</p>
+          <div class="tech-info">
+            <p><strong>Algoritma:</strong> KCC-128 (Block Cipher 128-bit)</p>
+            <p><strong>Blok:</strong> 16 byte (4×4 matriks)</p>
+            <p><strong>Round:</strong> 10</p>
+            <p><strong>S-Box:</strong> Logistic Chaotic Map (dinamis/round)</p>
+            <p><strong>Permutasi:</strong> Knight's Tour (Warnsdorff)</p>
+            <p><strong>Mode:</strong> CBC (Cipher Block Chaining)</p>
+            <p><strong>Key Schedule:</strong> SHA-256</p>
+            <p><strong>Padding:</strong> PKCS#7</p>
+          </div>
+        </div>
+
+        <label>
+          Plaintext
+          <textarea id="plaintext">Cyber Security Tugas 3: Knight-Chaos Cipher</textarea>
+        </label>
+
+        <label>
+          Key
+          <input id="key" value="KCC-24.55.2714-Muhammad-Rizky-Hajar">
+        </label>
+
+        <div class="toolbar">
+          <button id="encryptBtn">Encrypt & Animate</button>
+        </div>
+        <div class="toolbar-nav">
+          <button id="prevBtn" class="secondary">Prev</button>
+          <button id="playBtn" class="secondary">Play</button>
+          <button id="nextBtn" class="secondary">Next</button>
+        </div>
+
+        <div class="output">
+          <span>Ciphertext Hex</span>
+          <code id="cipherHex">-</code>
+        </div>
+        <div class="output">
+          <span>Decryption Check</span>
+          <code id="decryptCheck">-</code>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage">
+      <div class="stageHeader">
+        <div>
+          <p class="eyebrow">State Matrix 4x4</p>
+          <h2 id="stepTitle">Initial</h2>
+        </div>
+        <div class="stage-controls">
+          <select id="blockSelect" class="blockSelect">
+            <option value="0">Blok 1</option>
+          </select>
+          <div class="roundBadge" id="roundBadge">Round 0</div>
+        </div>
+      </div>
+
+      <div class="explain">
+        <div>
+          <span>OPERASI</span>
+          <p id="stepExplain">Plaintext masuk sebagai 16 byte pertama.</p>
+        </div>
+        <div>
+          <span>PERUBAHAN</span>
+          <p id="changeSummary">Menunggu proses enkripsi.</p>
+        </div>
+      </div>
+
+      <div class="matrix" id="matrix"></div>
+
+      <div class="compare">
+        <div>
+          <span>BEFORE</span>
+          <code id="beforeHex">-</code>
+        </div>
+        <div class="arrow">=&gt;</div>
+        <div>
+          <span>AFTER</span>
+          <code id="afterHex">-</code>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i class="k1"></i>AddRoundKey</span>
+        <span><i class="k2"></i>Chaotic S-Box</span>
+        <span><i class="k3"></i>Knight Permutation</span>
+        <span><i class="k4"></i>Bit/Diffusion Mix</span>
+      </div>
+
+      <div class="timelineWrap">
+        <p class="eyebrow">Timeline Round</p>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div class="concatWrap" id="concatWrap">
+        <p class="eyebrow">Assembly / Concat Blok → Ciphertext</p>
+        <div class="concat-visual" id="concatVisual"></div>
+        <div class="concat-result">
+          <span>CIPHERTEXT FINAL (gabungan semua blok)</span>
+          <code id="concatHex">-</code>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel notes">
+      <div class="panelBody">
+        <h2>Cara Membaca</h2>
+        <p>Demo ini memperlihatkan perubahan blok pertama dari plaintext sampai menjadi ciphertext.</p>
+        <ul>
+          <li>Baca panel OPERASI untuk mengetahui proses yang sedang berjalan.</li>
+          <li>Lihat PERUBAHAN untuk contoh nilai sebelum dan sesudah.</li>
+          <li>Cell bertanda * adalah byte yang berubah pada step tersebut.</li>
+          <li>Gunakan Next atau Play untuk mengikuti round secara berurutan.</li>
+        </ul>
+
+        <div class="detail-section" id="detailSection">
+          <h2>Detail Manual</h2>
+          <div class="detail-box" id="byteConversion">
+            <span>PLAINTEXT → BYTE</span>
+            <table id="byteTable"></table>
+          </div>
+          <div class="detail-box" id="stepDetail">
+            <span>HITUNG MANUAL (Byte 0)</span>
+            <pre id="manualCalc">Klik Encrypt untuk melihat detail.</pre>
+          </div>
+          <div class="detail-box" id="roundKeyBox">
+            <span>ROUND KEY</span>
+            <code id="roundKeyDisplay">-</code>
+          </div>
+          <div class="detail-box" id="permBox" style="display:none">
+            <span>JALUR KUDA</span>
+            <code id="permDisplay">-</code>
+          </div>
+          <div class="detail-box" id="sboxBox" style="display:none">
+            <span>S-BOX (Cuplikan)</span>
+            <code id="sboxDisplay">-</code>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

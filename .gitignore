@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local QA/build scratch
+build/
+docs/rendered/
+
+# Submission package generated on demand
+*.zip
+
+# Office temporary lock files
+~$*.xlsx
+~$*.docx
+~$*.pptx
