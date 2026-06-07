@@ -112,8 +112,6 @@ Implementasi menggunakan Python. Hasil sample run:
 
 Entropy naik dari 4.38 ke 6.63, menunjukkan ciphertext punya byte distribution yang lebih uniform dibanding plaintext (yang berupa teks biasa dengan karakter berulang). Avalanche 48.34% artinya mengubah 1 bit pada plaintext menyebabkan hampir separuh bit ciphertext berubah.
 
-Demo interaktif web juga berjalan. User bisa memasukkan plaintext dan key, menekan tombol Encrypt, lalu melihat perubahan state round per round.
-
 ## 7. Analisis Keamanan
 
 **Entropy:** Ciphertext menunjukkan byte distribution yang lebih uniform dibanding plaintext. Pattern karakter yang berulang pada teks natural sudah tidak terlihat pada ciphertext.
@@ -142,7 +140,7 @@ Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear crypt
 
 ## 9. Kesimpulan
 
-Knight-Chaos Cipher (KCC-128) berhasil dirancang dan diimplementasikan sebagai block cipher yang memodifikasi komponen substitution, permutation, diffusion, dan key schedule. Knight's tour dipakai sebagai mekanisme permutation, dan logistic chaotic map dipakai untuk men-generate dynamic S-Box per round.
+Knight-Chaos Cipher (KCC-128) dirancang dan diimplementasikan sebagai block cipher yang memodifikasi komponen substitution, permutation, diffusion, dan key schedule. Knight's tour digunakan sebagai mekanisme permutation, dan logistic chaotic map digunakan untuk men-generate dynamic S-Box per round.
 
 Dari pengujian awal, encryption-decryption berjalan benar, ciphertext entropy meningkat signifikan, dan avalanche effect mendekati 50%.
 
