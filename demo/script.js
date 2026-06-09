@@ -597,7 +597,7 @@ function renderKnightPath(item, before = null, after = null) {
   const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
   const moveCells = knightMoveCells(outputIndex, sourceIndex);
   els.knightWrap.classList.add("permutation-active");
-  els.knightSummary.textContent = `Round ${item.round}: BEFORE[src${sourceIndex.toString().padStart(2, "0")}] 0x${beforeValue} -> AFTER[out${outputIndex.toString().padStart(2, "0")}] 0x${afterValue}.`;
+  els.knightSummary.textContent = `Ambil nilai BEFORE posisi ${sourceIndex.toString().padStart(2, "0")} = 0x${beforeValue}, lalu taruh ke AFTER posisi ${outputIndex.toString().padStart(2, "0")} = 0x${afterValue}.`;
 
   els.knightBoard.innerHTML = "";
   for (let index = 0; index < 16; index++) {
@@ -605,7 +605,9 @@ function renderKnightPath(item, before = null, after = null) {
     const moveClass = moveCells.has(index) ? ` ${moveCells.get(index)}` : "";
     cell.className = `knight-cell${index === outputIndex ? " active" : ""}${index === activeSource ? " source-active" : ""}${moveClass}`;
     cell.dataset.index = index.toString().padStart(2, "0");
-    cell.innerHTML = `<span class="knight-step">src ${permutation[index].toString().padStart(2, "0")}</span><span class="knight-source">out ${index}</span>`;
+    const source = permutation[index];
+    const sourceValue = before ? before[source].toString(16).padStart(2, "0").toUpperCase() : "--";
+    cell.innerHTML = `<span class="knight-step">AFTER ${index.toString().padStart(2, "0")}</span><span class="knight-source">dari BEFORE ${source.toString().padStart(2, "0")}</span><span class="knight-value">0x${sourceValue}</span>`;
     els.knightBoard.appendChild(cell);
   }
 
@@ -615,13 +617,13 @@ function renderKnightPath(item, before = null, after = null) {
     const cell = document.createElement("div");
     cell.className = `knight-move-cell ${role}`;
     cell.dataset.index = index.toString().padStart(2, "0");
-    const label = role === "from" ? "OUT" : role === "to" ? "SRC" : role === "turn" ? "TURN" : role === "leg" ? "LEG" : "";
+    const label = role === "from" ? "AFTER" : role === "to" ? "BEFORE" : role === "turn" ? "TURN" : role === "leg" ? "LEG" : "";
     cell.textContent = label || ".";
     els.knightMoveBoard.appendChild(cell);
   }
 
   els.knightRoute.textContent = permutation
-    .map((sourceIndex, outIndex) => `out${outIndex.toString().padStart(2, "0")}<-src${sourceIndex.toString().padStart(2, "0")}`)
+    .map((sourceIndex, outIndex) => `AFTER${outIndex.toString().padStart(2, "0")}<=BEFORE${sourceIndex.toString().padStart(2, "0")}`)
     .join("  ");
 }
 
@@ -716,11 +718,14 @@ function renderDetail() {
       break;
     case "KnightPermutation":
       const srcIdx = mat.permutation[idx];
-      calc = `Posisi baru ${idx} ← ambil dari posisi lama ${srcIdx}\n`;
-      calc += `Byte di posisi ${srcIdx}: 0x${before[srcIdx].toString(16).padStart(2, "0").toUpperCase()}\n`;
-      calc += `Hasil posisi ${idx}: 0x${b0After.toString(16).padStart(2, "0").toUpperCase()}`;
+      calc = `AFTER posisi ${idx} diisi dari BEFORE posisi ${srcIdx}\n`;
+      calc += `BEFORE[${srcIdx}] = 0x${before[srcIdx].toString(16).padStart(2, "0").toUpperCase()}\n`;
+      calc += `AFTER[${idx}]  = 0x${b0After.toString(16).padStart(2, "0").toUpperCase()}\n`;
+      calc += `Angka ${srcIdx} dan ${idx} adalah nomor kecil di kiri atas cell matriks.`;
       els.permBox.style.display = "block";
-      els.permDisplay.textContent = "Jalur: [" + mat.permutation.join(", ") + "]";
+      els.permDisplay.textContent = mat.permutation
+        .map((sourceIndex, outIndex) => `AFTER${outIndex.toString().padStart(2, "0")}<=BEFORE${sourceIndex.toString().padStart(2, "0")}`)
+        .join("  ");
       break;
     case "BitShiftMix":
       const rot = mat.rotations[idx];

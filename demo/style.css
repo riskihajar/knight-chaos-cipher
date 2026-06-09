@@ -446,14 +446,20 @@ code {
 
 .knight-step {
   color: var(--ink);
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 900;
 }
 
-.knight-source {
+.knight-source,
+.knight-value {
   color: var(--muted);
   font-size: 10px;
   margin-top: 2px;
+}
+
+.knight-value {
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .knight-cell.active {
@@ -480,7 +486,8 @@ code {
 
 .knight-cell.active::before,
 .knight-cell.active .knight-source,
-.knight-cell.active .knight-step {
+.knight-cell.active .knight-step,
+.knight-cell.active .knight-value {
   color: #050505;
 }
 
