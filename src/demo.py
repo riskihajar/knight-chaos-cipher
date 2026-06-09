@@ -338,7 +338,9 @@ def render_assembly(state: DemoState) -> str:
 
 def prompt_with_default(label: str, default: str) -> str:
     """Ask for terminal input and return the default when the user presses Enter."""
-    value = input(f"{label} [{default}]: ").strip()
+    print(f"\nDefault {label}:")
+    print(f"  {default}")
+    value = input(f"{label} > ").strip()
     return value or default
 
 
