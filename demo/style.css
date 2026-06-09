@@ -386,6 +386,90 @@ code {
 .k3 { background: var(--step-3); }
 .k4 { background: var(--step-4); }
 
+.knightWrap {
+  border: 1px solid var(--line);
+  background: #000;
+  padding: 10px;
+}
+
+.knightWrap > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.knightWrap p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.knight-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.knight-cell {
+  min-height: 52px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-soft);
+  color: var(--ink);
+  padding: 6px;
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+}
+
+.knight-cell::before {
+  content: attr(data-index);
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.knight-step {
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.knight-source {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.knight-cell.active {
+  background: var(--ink);
+  color: #050505;
+}
+
+.knight-cell.active::before,
+.knight-cell.active .knight-source,
+.knight-cell.active .knight-step {
+  color: #050505;
+}
+
+.knightWrap.permutation-active {
+  border-color: var(--ink);
+}
+
+.knightWrap code {
+  font-size: 10px;
+  padding: 6px;
+}
+
 .timeline {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));

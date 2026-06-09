@@ -49,7 +49,11 @@ const els = {
   plainEntropy: document.getElementById("plainEntropy"),
   cipherEntropy: document.getElementById("cipherEntropy"),
   avalancheValue: document.getElementById("avalancheValue"),
-  frequencySummary: document.getElementById("frequencySummary")
+  frequencySummary: document.getElementById("frequencySummary"),
+  knightWrap: document.getElementById("knightWrap"),
+  knightBoard: document.getElementById("knightBoard"),
+  knightRoute: document.getElementById("knightRoute"),
+  knightSummary: document.getElementById("knightSummary")
 };
 
 const STEP_TEXT = {
@@ -506,6 +510,43 @@ function renderByteTable() {
   els.byteTable.innerHTML = html;
 }
 
+function currentKnightMaterial(item) {
+  const round = item?.round && item.round > 0 ? item.round : 1;
+  return lastMaterials?.[round - 1] || null;
+}
+
+function renderKnightPath(item) {
+  const material = currentKnightMaterial(item);
+  if (!material) {
+    els.knightBoard.innerHTML = "";
+    els.knightRoute.textContent = "-";
+    els.knightSummary.textContent = "Jalur kuda muncul setelah proses enkripsi.";
+    return;
+  }
+
+  const permutation = material.permutation;
+  const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
+  els.knightWrap.classList.toggle("permutation-active", item.step === "KnightPermutation");
+  els.knightSummary.textContent = item.step === "KnightPermutation"
+    ? `Round ${item.round}: output posisi ${selectedByte} mengambil byte dari posisi ${activeSource}.`
+    : `Preview jalur kuda untuk round ${item.round || 1}.`;
+
+  const orderBySource = new Map(permutation.map((sourceIndex, order) => [sourceIndex, order + 1]));
+  els.knightBoard.innerHTML = "";
+  for (let index = 0; index < 16; index++) {
+    const cell = document.createElement("div");
+    cell.className = `knight-cell${index === activeSource ? " active" : ""}`;
+    cell.dataset.index = index.toString().padStart(2, "0");
+    const order = orderBySource.get(index);
+    cell.innerHTML = `<span class="knight-step">${order.toString().padStart(2, "0")}</span><span class="knight-source">src ${index}</span>`;
+    els.knightBoard.appendChild(cell);
+  }
+
+  els.knightRoute.textContent = permutation
+    .map((sourceIndex, order) => `${(order + 1).toString().padStart(2, "0")}:${sourceIndex}`)
+    .join(" -> ");
+}
+
 function toBin(val) {
   return val.toString(2).padStart(8, "0");
 }
@@ -672,6 +713,7 @@ function renderStep() {
     });
     els.matrix.appendChild(cell);
   });
+  renderKnightPath(item);
   [...els.timeline.children].forEach((tick, index) => tick.classList.toggle("current", index === stepIndex));
   renderDetail();
 }

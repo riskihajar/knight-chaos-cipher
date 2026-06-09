@@ -119,6 +119,36 @@ def format_matrix(block: bytes) -> str:
     return "\n".join(rows)
 
 
+def format_knight_board(permutation: tuple[int, ...]) -> str:
+    """Render knight permutation order on the 4x4 source-position board."""
+    order_by_source = {source: order + 1 for order, source in enumerate(permutation)}
+    rows = []
+    for row in range(4):
+        values = []
+        for col in range(4):
+            source_index = row * 4 + col
+            values.append(f"{order_by_source[source_index]:02d}@{source_index:02d}")
+        rows.append("  " + "  ".join(values))
+    return "\n".join(rows)
+
+
+def render_knight_path(state: DemoState, round_number: int) -> str:
+    """Render the chess-knight path used by one round permutation."""
+    material = state.cipher.round_material[round_number - 1]
+    route = " -> ".join(
+        f"{order + 1:02d}:{source_index:02d}"
+        for order, source_index in enumerate(material.permutation)
+    )
+    return "\n".join(
+        [
+            f"Knight path round {round_number}:",
+            "  Format papan: urutan@posisi_sumber",
+            format_knight_board(material.permutation),
+            f"  Route: {route}",
+        ]
+    )
+
+
 def build_state(plaintext: str, key: str) -> DemoState:
     """Encrypt text and build CBC block traces for interactive inspection."""
     cipher = KnightChaosCipher(key)
@@ -243,6 +273,8 @@ def render_step(state: DemoState, block_index: int, step_index: int) -> str:
         "Timeline:",
         render_timeline(trace, step_index),
     ]
+    if int(item["round"]) > 0:
+        body.extend(["", render_knight_path(state, int(item["round"]))])
     return format_panel("Step-by-step Animation", body)
 
 
@@ -283,6 +315,7 @@ def print_interactive_help() -> None:
                 "b <nomor>      : pindah blok, contoh b 2",
                 "j <nomor>      : lompat ke step, contoh j 10",
                 "a / analysis   : tampilkan Security Analysis",
+                "k / knight     : tampilkan jalur kuda round aktif",
                 "s / summary    : tampilkan ringkasan enkripsi",
                 "c / concat     : tampilkan assembly ciphertext",
                 "d / decrypt    : uji decrypt ciphertext hex",
@@ -341,6 +374,10 @@ def interactive_loop() -> None:
         if command in {"a", "analysis"}:
             print(render_security_analysis(state))
             continue
+        if command in {"k", "knight"}:
+            active_round = int(state.block_traces[block_index][step_index]["round"]) or 1
+            print(format_panel("Knight Path", [render_knight_path(state, active_round)]))
+            continue
         if command in {"s", "summary"}:
             print(render_header(state))
             continue
@@ -369,6 +406,7 @@ def run_demo(plaintext: str, key: str) -> str:
         [
             render_header(state),
             render_step(state, 0, 0),
+            render_step(state, 0, 4),
             render_assembly(state),
             render_security_analysis(state),
         ]

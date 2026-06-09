@@ -84,6 +84,71 @@
 +----------------------------------------------------------------------------+
 
 +----------------------------------------------------------------------------+
+| STEP-BY-STEP ANIMATION                                                     |
++----------------------------------------------------------------------------+
+| Blok 1/8 - Step 4/61                                                       |
+| Round : 1                                                                  |
+| Operasi : Knight permutation                                               |
+| Makna   : Posisi byte disusun ulang mengikuti jalur langkah kuda pada      |
+| papan 4x4.                                                                 |
+|                                                                            |
+| Plain block preview:                                                       |
+|   Cyber Security T                                                         |
+|                                                                            |
+| State matrix 4x4:                                                          |
+|   93  29  B1  DA                                                           |
+|   A9  E9  CD  4E                                                           |
+|   24  7E  F9  64                                                           |
+|   66  E0  29  96                                                           |
+|                                                                            |
+| Before : cd4eb1daa9932429e964e09666297ef9                                  |
+| After  : 9329b1daa9e9cd4e247ef96466e02996                                  |
+|                                                                            |
+| Timeline:                                                                  |
+|  00:Initial                        |  01:CBC-XOR-IV                        |
+|  02:AddRoundKey                    |  03:ChaoticSubBytes                   |
+| >04:KnightPermutation              |  05:BitShiftMix                       |
+|  06:ByteDiffusion                  |  07:FeistelMix                        |
+|  08:AddRoundKey                    |  09:ChaoticSubBytes                   |
+|  10:KnightPermutation              |  11:BitShiftMix                       |
+|  12:ByteDiffusion                  |  13:FeistelMix                        |
+|  14:AddRoundKey                    |  15:ChaoticSubBytes                   |
+|  16:KnightPermutation              |  17:BitShiftMix                       |
+|  18:ByteDiffusion                  |  19:FeistelMix                        |
+|  20:AddRoundKey                    |  21:ChaoticSubBytes                   |
+|  22:KnightPermutation              |  23:BitShiftMix                       |
+|  24:ByteDiffusion                  |  25:FeistelMix                        |
+|  26:AddRoundKey                    |  27:ChaoticSubBytes                   |
+|  28:KnightPermutation              |  29:BitShiftMix                       |
+|  30:ByteDiffusion                  |  31:FeistelMix                        |
+|  32:AddRoundKey                    |  33:ChaoticSubBytes                   |
+|  34:KnightPermutation              |  35:BitShiftMix                       |
+|  36:ByteDiffusion                  |  37:FeistelMix                        |
+|  38:AddRoundKey                    |  39:ChaoticSubBytes                   |
+|  40:KnightPermutation              |  41:BitShiftMix                       |
+|  42:ByteDiffusion                  |  43:FeistelMix                        |
+|  44:AddRoundKey                    |  45:ChaoticSubBytes                   |
+|  46:KnightPermutation              |  47:BitShiftMix                       |
+|  48:ByteDiffusion                  |  49:FeistelMix                        |
+|  50:AddRoundKey                    |  51:ChaoticSubBytes                   |
+|  52:KnightPermutation              |  53:BitShiftMix                       |
+|  54:ByteDiffusion                  |  55:FeistelMix                        |
+|  56:AddRoundKey                    |  57:ChaoticSubBytes                   |
+|  58:KnightPermutation              |  59:BitShiftMix                       |
+|  60:ByteDiffusion                  |  61:FeistelMix                        |
+|                                                                            |
+| Knight path round 1:                                                       |
+|   Format papan: urutan@posisi_sumber                                       |
+|   07@00  08@01  03@02  04@03                                               |
+|   05@04  01@05  09@06  02@07                                               |
+|   06@08  12@09  14@10  16@11                                               |
+|   13@12  15@13  10@14  11@15                                               |
+|   Route: 01:05 -> 02:07 -> 03:02 -> 04:03 -> 05:04 -> 06:08 -> 07:00 ->    |
+| 08:01 -> 09:06 -> 10:14 -> 11:15 -> 12:09 -> 13:12 -> 14:10 -> 15:13 ->    |
+| 16:11                                                                      |
++----------------------------------------------------------------------------+
+
++----------------------------------------------------------------------------+
 | ASSEMBLY / CONCAT BLOK -> CIPHERTEXT                                       |
 +----------------------------------------------------------------------------+
 | Blok 1 : 4748a9da8af6c546587e95ff27d4c0d5                                  |

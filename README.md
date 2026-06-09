@@ -27,6 +27,7 @@ Demo CLI berjalan interaktif saat dibuka langsung dari terminal. Plaintext dan k
 - `b <nomor>`: pindah blok ciphertext.
 - `j <nomor>`: lompat ke step tertentu.
 - `a`: tampilkan Security Analysis.
+- `k`: tampilkan jalur kuda untuk round aktif.
 - `c`: tampilkan assembly block ke ciphertext final.
 - `d`: uji decrypt ciphertext hex dengan key aktif.
 
@@ -48,6 +49,7 @@ Fitur demo:
 - Block selector (dropdown) untuk melihat proses per block.
 - Matrix 4×4 — klik cell untuk melihat hitung manual byte tersebut.
 - Detail panel: XOR biner, S-Box lookup, rotation, diffusion per byte.
+- Knight Path panel: urutan langkah kuda pada board 4×4 untuk round aktif.
 - Assembly view: visualisasi concat block → ciphertext final.
 - Timeline navigation step-by-step per round.
 
