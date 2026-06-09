@@ -156,7 +156,7 @@ class KnightChaosCipher:
         return state
 
     def trace_block(self, block: bytes) -> list[dict[str, str | int]]:
-        """Return round-by-round states for animation or explanation."""
+        """Return round-by-round states for walkthrough or explanation."""
         if len(block) != BLOCK_SIZE:
             raise ValueError("Trace block must be exactly 16 bytes.")
         trace: list[dict[str, str | int]] = [{"round": 0, "step": "Initial", "hex": block.hex()}]

@@ -296,7 +296,7 @@ def render_timeline(trace: list[dict[str, str | int]], step_index: int) -> str:
 
 
 def render_step(state: DemoState, block_index: int, step_index: int) -> str:
-    """Render one selected block and selected animation step."""
+    """Render one selected block and selected trace step."""
     trace = state.block_traces[block_index]
     item = trace[step_index]
     current = bytes.fromhex(str(item["hex"]))
@@ -324,7 +324,7 @@ def render_step(state: DemoState, block_index: int, step_index: int) -> str:
     ]
     if step_name == "KnightPermutation":
         body.extend(["", render_knight_path(state, int(item["round"]), 0, previous, current)])
-    return format_panel("Step-by-step Animation", body)
+    return format_panel("Step-by-step Trace", body)
 
 
 def render_assembly(state: DemoState) -> str:
