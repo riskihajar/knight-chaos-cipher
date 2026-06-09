@@ -210,16 +210,60 @@ class KnightChaosCipher:
         return tuple(item for _, item in sorted(values))
 
     def _generate_knight_permutation(self, seed: bytes) -> tuple[int, ...]:
-        """Generate a seed-dependent 16-position permutation from knight moves."""
-        starts = [seed[0] % BLOCK_SIZE, seed[1] % BLOCK_SIZE, seed[2] % BLOCK_SIZE]
-        candidates = []
-        for start in starts:
-            path = self._knight_path(start, seed)
-            if path and len(path) == BLOCK_SIZE:
-                candidates.append(tuple(path))
-        if candidates:
-            return candidates[0]
-        return tuple(sorted(range(BLOCK_SIZE), key=lambda i: seed[i % len(seed)] ^ (i * 29)))
+        """Generate a bijective permutation where every mapping is a knight move."""
+        output_order = sorted(
+            range(BLOCK_SIZE),
+            key=lambda i: seed[(i * 3) % len(seed)] ^ (i * 29),
+        )
+        choices = {
+            output_index: sorted(
+                self._knight_targets(output_index),
+                key=lambda source_index: (
+                    seed[(output_index + source_index) % len(seed)] ^ (source_index * 17),
+                    source_index,
+                ),
+            )
+            for output_index in range(BLOCK_SIZE)
+        }
+        assigned: dict[int, int] = {}
+        used_sources: set[int] = set()
+
+        def backtrack() -> bool:
+            if len(assigned) == BLOCK_SIZE:
+                return True
+            remaining = [index for index in output_order if index not in assigned]
+            output_index = min(
+                remaining,
+                key=lambda index: (
+                    sum(source not in used_sources for source in choices[index]),
+                    output_order.index(index),
+                ),
+            )
+            for source_index in choices[output_index]:
+                if source_index in used_sources:
+                    continue
+                assigned[output_index] = source_index
+                used_sources.add(source_index)
+                if backtrack():
+                    return True
+                used_sources.remove(source_index)
+                del assigned[output_index]
+            return False
+
+        if not backtrack():
+            raise ValueError("Cannot build knight-move permutation on 4x4 board.")
+        return tuple(assigned[index] for index in range(BLOCK_SIZE))
+
+    def _knight_targets(self, index: int) -> list[int]:
+        """Return board indexes reachable by one legal L-shaped knight move."""
+        moves = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
+        row, col = divmod(index, BOARD_SIZE)
+        targets = []
+        for dr, dc in moves:
+            nr, nc = row + dr, col + dc
+            if 0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE:
+                targets.append(nr * BOARD_SIZE + nc)
+        return targets
 
     def _knight_path(self, start: int, seed: bytes) -> list[int]:
         """Build a path over the 4x4 board using legal chess knight moves."""

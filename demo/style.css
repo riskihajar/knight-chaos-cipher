@@ -407,7 +407,8 @@ code {
   line-height: 1.35;
 }
 
-.knight-board {
+.knight-board,
+.knight-move-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-top: 1px solid var(--line);
@@ -455,6 +456,23 @@ code {
   color: #050505;
 }
 
+.knight-cell.source-active {
+  box-shadow: inset 0 0 0 3px var(--ink);
+}
+
+.knight-cell.from,
+.knight-cell.to,
+.knight-cell.turn,
+.knight-cell.leg {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.knight-cell.turn,
+.knight-cell.leg {
+  background: #2a2a2a;
+}
+
 .knight-cell.active::before,
 .knight-cell.active .knight-source,
 .knight-cell.active .knight-step {
@@ -468,6 +486,50 @@ code {
 .knightWrap code {
   font-size: 10px;
   padding: 6px;
+}
+
+.knight-move-board {
+  grid-template-columns: repeat(4, minmax(54px, 1fr));
+}
+
+.knight-move-cell {
+  min-height: 42px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #050505;
+  color: var(--muted);
+  padding: 6px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.knight-move-cell::before {
+  content: attr(data-index);
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.knight-move-cell.from,
+.knight-move-cell.to {
+  background: var(--ink);
+  color: #050505;
+}
+
+.knight-move-cell.from::before,
+.knight-move-cell.to::before {
+  color: #050505;
+}
+
+.knight-move-cell.leg,
+.knight-move-cell.turn {
+  background: #2f2f2f;
+  color: var(--ink);
 }
 
 .timeline {

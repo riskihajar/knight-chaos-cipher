@@ -11,7 +11,7 @@
 Folder ini berisi rancangan, implementasi, analisis, dan demo interaktif algoritma kriptografi baru bernama **Knight-Chaos Cipher (KCC-128)**. Algoritma ini memodifikasi komponen utama cipher melalui:
 
 - Dynamic S-Box berbasis logistic chaotic map (berubah per round).
-- Byte permutation berbasis knight's tour pada board 4×4.
+- Byte permutation berbasis matching langkah kuda berbentuk L pada board 4×4.
 - Key schedule yang mengubah round key, S-Box, knight path, bit rotation, dan diffusion.
 - Demo interaktif dengan hitung manual per byte dan multi-block visualization.
 

@@ -120,30 +120,69 @@ def format_matrix(block: bytes) -> str:
 
 
 def format_knight_board(permutation: tuple[int, ...]) -> str:
-    """Render knight permutation order on the 4x4 source-position board."""
-    order_by_source = {source: order + 1 for order, source in enumerate(permutation)}
+    """Render source indexes selected by each 4x4 output position."""
     rows = []
     for row in range(4):
         values = []
         for col in range(4):
-            source_index = row * 4 + col
-            values.append(f"{order_by_source[source_index]:02d}@{source_index:02d}")
+            output_index = row * 4 + col
+            values.append(f"S{permutation[output_index]:02d}")
         rows.append("  " + "  ".join(values))
     return "\n".join(rows)
 
 
-def render_knight_path(state: DemoState, round_number: int) -> str:
+def knight_move_cells(from_index: int, to_index: int) -> dict[int, str]:
+    """Return FROM/LEG/TURN/TO cells that draw one L-shaped knight move."""
+    from_row, from_col = divmod(from_index, 4)
+    to_row, to_col = divmod(to_index, 4)
+    row_delta = to_row - from_row
+    col_delta = to_col - from_col
+    row_step = 1 if row_delta > 0 else -1 if row_delta < 0 else 0
+    col_step = 1 if col_delta > 0 else -1 if col_delta < 0 else 0
+    cells = {from_index: "FROM", to_index: "TO"}
+
+    if abs(row_delta) == 2 and abs(col_delta) == 1:
+        cells[(from_row + row_step) * 4 + from_col] = "LEG"
+        cells[to_row * 4 + from_col] = "TURN"
+    elif abs(row_delta) == 1 and abs(col_delta) == 2:
+        cells[from_row * 4 + from_col + col_step] = "LEG"
+        cells[from_row * 4 + to_col] = "TURN"
+    return cells
+
+
+def format_knight_l_move(permutation: tuple[int, ...], output_index: int = 0) -> str:
+    """Render the active L shape from one output position to its source position."""
+    output_index = max(0, min(output_index, len(permutation) - 1))
+    source_index = permutation[output_index]
+    cells = knight_move_cells(output_index, source_index)
+    rows = [f"  Bentuk L aktif: output {output_index:02d} mengambil source {source_index:02d}"]
+    for row in range(4):
+        values = []
+        for col in range(4):
+            cell_index = row * 4 + col
+            label = cells.get(cell_index, "..")
+            if label == "FROM":
+                label = "OUT"
+            elif label == "TO":
+                label = "SRC"
+            values.append(f"{label:<4}")
+        rows.append("  " + " ".join(values))
+    return "\n".join(rows)
+
+
+def render_knight_path(state: DemoState, round_number: int, move_index: int = 0) -> str:
     """Render the chess-knight path used by one round permutation."""
     material = state.cipher.round_material[round_number - 1]
     route = " -> ".join(
-        f"{order + 1:02d}:{source_index:02d}"
-        for order, source_index in enumerate(material.permutation)
+        f"out{output_index:02d}<-src{source_index:02d}"
+        for output_index, source_index in enumerate(material.permutation)
     )
     return "\n".join(
         [
             f"Knight path round {round_number}:",
-            "  Format papan: urutan@posisi_sumber",
+            "  Format papan: Sxx berarti output cell mengambil source xx",
             format_knight_board(material.permutation),
+            format_knight_l_move(material.permutation, move_index),
             f"  Route: {route}",
         ]
     )
@@ -202,7 +241,7 @@ def render_header(state: DemoState) -> str:
             "Blok      : 16 byte (4x4 matrix)",
             "Round     : 10",
             "S-Box     : Logistic Chaotic Map dinamis per round",
-            "Permutasi : Knight's Tour pada board 4x4",
+            "Permutasi : Knight L-move matching pada board 4x4",
             "Mode      : CBC (Cipher Block Chaining)",
             "Padding   : PKCS#7",
             "",
@@ -274,7 +313,7 @@ def render_step(state: DemoState, block_index: int, step_index: int) -> str:
         render_timeline(trace, step_index),
     ]
     if int(item["round"]) > 0:
-        body.extend(["", render_knight_path(state, int(item["round"]))])
+        body.extend(["", render_knight_path(state, int(item["round"]), 0)])
     return format_panel("Step-by-step Animation", body)
 
 
@@ -376,7 +415,7 @@ def interactive_loop() -> None:
             continue
         if command in {"k", "knight"}:
             active_round = int(state.block_traces[block_index][step_index]["round"]) or 1
-            print(format_panel("Knight Path", [render_knight_path(state, active_round)]))
+            print(format_panel("Knight Path", [render_knight_path(state, active_round, 0)]))
             continue
         if command in {"s", "summary"}:
             print(render_header(state))

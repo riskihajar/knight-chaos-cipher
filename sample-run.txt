@@ -9,7 +9,7 @@
 | Blok      : 16 byte (4x4 matrix)                                           |
 | Round     : 10                                                             |
 | S-Box     : Logistic Chaotic Map dinamis per round                         |
-| Permutasi : Knight's Tour pada board 4x4                                   |
+| Permutasi : Knight L-move matching pada board 4x4                          |
 | Mode      : CBC (Cipher Block Chaining)                                    |
 | Padding   : PKCS#7                                                         |
 |                                                                            |
@@ -17,14 +17,14 @@
 | langkah kuda catur dan logistic chaotic map untuk enkripsi kreatif.        |
 | Key       : KCC-24.55.2714-Muhammad-Rizky-Hajar                            |
 | Cipherhex :                                                                |
-| 4748a9da8af6c546587e95ff27d4c0d5a475eada4ed37681067d2e3de67aa3c6f40fd0990d |
-| 779f21b8522a86931a60648ef05901eb60073ee73fe288cb419a0540a288ec69f125affe29 |
-| f9d4342440a929b3b2a5ec5b5b6ec69a0846f8962341ad4f532b7528731a4518c8f5dd35c1 |
-| 70b5a9062b7a5e9b6289a8817bcb3a7ec6                                         |
+| 88ab5e41bc7299b0fe428d438e03acee956beec5734b6fd4bd0c9dce76aea3b3885a7fd080 |
+| f2eab0f341981aa02c58e6eacccb75d0049aaff938c7c8640e0baa09c514e758124c0ffceb |
+| 6c9e31939a91206435c583eafb8d356efb03823741b11aa388f09c30e0a4f8e2df09a71019 |
+| 8ba697f2d51f702620e3839f2c7201b39d                                         |
 | Base64    :                                                                |
-| R0ip2or2xUZYfpX/J9TA1aR16tpO03aBBn0uPeZ6o8b0D9CZDXefIbhSKoaTGmBkjvBZAetgBz |
-| 7nP+KIy0GaBUCiiOxp8SWv/in51DQkQKkps7Kl7FtbbsaaCEb4liNBrU9TK3UocxpFGMj13TXB |
-| cLWpBit6XptiiaiBe8s6fsY=                                                   |
+| iKteQbxymbD+Qo1DjgOs7pVr7sVzS2/UvQydznauo7OIWn/QgPLqsPNBmBqgLFjm6szLddAEmq |
+| /5OMfIZA4LqgnFFOdYEkwP/OtsnjGTmpEgZDXFg+r7jTVu+wOCN0GxGqOI8Jww4KT44t8JpxAZ |
+| i6aX8tUfcCYg44OfLHIBs50=                                                   |
 | Decrypt   : OK - plaintext kembali utuh                                    |
 +----------------------------------------------------------------------------+
 
@@ -96,13 +96,13 @@
 |   Cyber Security T                                                         |
 |                                                                            |
 | State matrix 4x4:                                                          |
-|   93  29  B1  DA                                                           |
-|   A9  E9  CD  4E                                                           |
-|   24  7E  F9  64                                                           |
-|   66  E0  29  96                                                           |
+|   64  E9  96  E0                                                           |
+|   B1  66  F9  7E                                                           |
+|   4E  CD  DA  29                                                           |
+|   93  A9  29  24                                                           |
 |                                                                            |
 | Before : cd4eb1daa9932429e964e09666297ef9                                  |
-| After  : 9329b1daa9e9cd4e247ef96466e02996                                  |
+| After  : 64e996e0b166f97e4ecdda2993a92924                                  |
 |                                                                            |
 | Timeline:                                                                  |
 |  00:Initial                        |  01:CBC-XOR-IV                        |
@@ -138,33 +138,39 @@
 |  60:ByteDiffusion                  |  61:FeistelMix                        |
 |                                                                            |
 | Knight path round 1:                                                       |
-|   Format papan: urutan@posisi_sumber                                       |
-|   07@00  08@01  03@02  04@03                                               |
-|   05@04  01@05  09@06  02@07                                               |
-|   06@08  12@09  14@10  16@11                                               |
-|   13@12  15@13  10@14  11@15                                               |
-|   Route: 01:05 -> 02:07 -> 03:02 -> 04:03 -> 05:04 -> 06:08 -> 07:00 ->    |
-| 08:01 -> 09:06 -> 10:14 -> 11:15 -> 12:09 -> 13:12 -> 14:10 -> 15:13 ->    |
-| 16:11                                                                      |
+|   Format papan: Sxx berarti output cell mengambil source xx                |
+|   S09  S08  S11  S10                                                       |
+|   S02  S12  S15  S14                                                       |
+|   S01  S00  S03  S13                                                       |
+|   S05  S04  S07  S06                                                       |
+|   Bentuk L aktif: output 00 mengambil source 09                            |
+|   OUT  ..   ..   ..                                                        |
+|   LEG  ..   ..   ..                                                        |
+|   TURN SRC  ..   ..                                                        |
+|   ..   ..   ..   ..                                                        |
+|   Route: out00<-src09 -> out01<-src08 -> out02<-src11 -> out03<-src10 ->   |
+| out04<-src02 -> out05<-src12 -> out06<-src15 -> out07<-src14 ->            |
+| out08<-src01 -> out09<-src00 -> out10<-src03 -> out11<-src13 ->            |
+| out12<-src05 -> out13<-src04 -> out14<-src07 -> out15<-src06               |
 +----------------------------------------------------------------------------+
 
 +----------------------------------------------------------------------------+
 | ASSEMBLY / CONCAT BLOK -> CIPHERTEXT                                       |
 +----------------------------------------------------------------------------+
-| Blok 1 : 4748a9da8af6c546587e95ff27d4c0d5                                  |
-| Blok 2 : a475eada4ed37681067d2e3de67aa3c6                                  |
-| Blok 3 : f40fd0990d779f21b8522a86931a6064                                  |
-| Blok 4 : 8ef05901eb60073ee73fe288cb419a05                                  |
-| Blok 5 : 40a288ec69f125affe29f9d4342440a9                                  |
-| Blok 6 : 29b3b2a5ec5b5b6ec69a0846f8962341                                  |
-| Blok 7 : ad4f532b7528731a4518c8f5dd35c170                                  |
-| Blok 8 : b5a9062b7a5e9b6289a8817bcb3a7ec6                                  |
+| Blok 1 : 88ab5e41bc7299b0fe428d438e03acee                                  |
+| Blok 2 : 956beec5734b6fd4bd0c9dce76aea3b3                                  |
+| Blok 3 : 885a7fd080f2eab0f341981aa02c58e6                                  |
+| Blok 4 : eacccb75d0049aaff938c7c8640e0baa                                  |
+| Blok 5 : 09c514e758124c0ffceb6c9e31939a91                                  |
+| Blok 6 : 206435c583eafb8d356efb03823741b1                                  |
+| Blok 7 : 1aa388f09c30e0a4f8e2df09a710198b                                  |
+| Blok 8 : a697f2d51f702620e3839f2c7201b39d                                  |
 |                                                                            |
 | Ciphertext final:                                                          |
-| 4748a9da8af6c546587e95ff27d4c0d5a475eada4ed37681067d2e3de67aa3c6f40fd0990d |
-| 779f21b8522a86931a60648ef05901eb60073ee73fe288cb419a0540a288ec69f125affe29 |
-| f9d4342440a929b3b2a5ec5b5b6ec69a0846f8962341ad4f532b7528731a4518c8f5dd35c1 |
-| 70b5a9062b7a5e9b6289a8817bcb3a7ec6                                         |
+| 88ab5e41bc7299b0fe428d438e03acee956beec5734b6fd4bd0c9dce76aea3b3885a7fd080 |
+| f2eab0f341981aa02c58e6eacccb75d0049aaff938c7c8640e0baa09c514e758124c0ffceb |
+| 6c9e31939a91206435c583eafb8d356efb03823741b11aa388f09c30e0a4f8e2df09a71019 |
+| 8ba697f2d51f702620e3839f2c7201b39d                                         |
 +----------------------------------------------------------------------------+
 
 +----------------------------------------------------------------------------+
@@ -172,10 +178,10 @@
 +----------------------------------------------------------------------------+
 | Plaintext entropy  : 4.4017 bit/byte                                       |
 |   Keragaman byte sebelum enkripsi.                                         |
-| Ciphertext entropy : 6.6288 bit/byte                                       |
+| Ciphertext entropy : 6.5389 bit/byte                                       |
 |   Keragaman byte setelah enkripsi.                                         |
-| Avalanche effect   : 50.29%                                                |
+| Avalanche effect   : 49.80%                                                |
 |   Perubahan ciphertext saat 1 bit plaintext diubah.                        |
-| Top byte frequency : 0xa9:3  0xc6:3  0xda:2  0x46:2  0x7e:2  0xd4:2        |
-| 0x75:2  0x81:2  0x06:2  0x7a:2                                             |
+| Top byte frequency : 0x88:3  0x41:3  0xc5:3  0xea:3  0x72:2  0xb0:2        |
+| 0x8d:2  0x03:2  0xee:2  0x9d:2                                             |
 +----------------------------------------------------------------------------+

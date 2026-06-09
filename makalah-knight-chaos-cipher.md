@@ -32,7 +32,7 @@ Initial value `x` dan parameter `r` di-derive dari round seed. Deret chaotic ini
 
 ### 3.2 Permutasi Langkah Kuda Catur
 
-Setiap block 16 byte di-map ke board 4×4. Posisi byte lalu di-permute mengikuti pola langkah kuda catur (L-shape: 2+1 cell). Starting position ditentukan oleh round seed. Kalau ada lebih dari satu valid move, dipilih yang punya jumlah onward move terkecil (Warnsdorff's heuristic). Kalau masih tie, round seed dipakai sebagai tiebreaker.
+Setiap block 16 byte di-map ke board 4×4. Permutasi dibuat sebagai pasangan output-source yang bijektif: setiap posisi output mengambil satu posisi source yang berjarak langkah kuda catur (L-shape: 2+1 cell). Round seed menentukan urutan pemilihan output dan prioritas source, sehingga route berubah pada tiap round dan tetap dapat dibalik saat dekripsi.
 
 Dibanding shift linear seperti ShiftRows di AES, knight move menghasilkan perpindahan yang non-sequential antar row dan column. Byte yang tadinya adjacent bisa ter-scatter jauh setelah permutation.
 
@@ -63,7 +63,7 @@ Pada decryption, semua step di-reverse dan menggunakan inverse operation. S-Box 
 |---|---|---|
 | AddRoundKey | XOR state dengan round key | Round key dari SHA-256 |
 | ChaoticSubBytes | Substitute value byte | S-Box berubah tiap round (chaotic map) |
-| KnightPermutation | Shuffle posisi byte | Knight's tour pattern pada board 4×4 |
+| KnightPermutation | Shuffle posisi byte | Matching langkah kuda berbentuk L pada board 4×4 |
 | BitShiftMix | Rotate bit dalam byte | Rotation amount dari round seed |
 | ByteDiffusion | Propagate perubahan antar byte | XOR chaining dengan carry |
 | FeistelMix | Strengthen diffusion | Invertible mixing 3 pass |
@@ -128,7 +128,7 @@ Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear crypt
 
 **Kelebihan:**
 - S-Box tidak tetap, berubah setiap round berdasarkan chaotic map
-- Non-linear permutation dari knight's tour pattern
+- Permutasi bijektif dari matching langkah kuda berbentuk L
 - Key schedule memengaruhi beberapa komponen utama, seperti round key, S-Box, route permutation, dan bit rotation
 - Semua operation invertible sehingga decryption bekerja dengan benar
 
@@ -140,7 +140,7 @@ Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear crypt
 
 ## 9. Kesimpulan
 
-Knight-Chaos Cipher (KCC-128) dirancang dan diimplementasikan sebagai block cipher yang memodifikasi komponen substitution, permutation, diffusion, dan key schedule. Knight's tour digunakan sebagai mekanisme permutation, dan logistic chaotic map digunakan untuk men-generate dynamic S-Box per round.
+Knight-Chaos Cipher (KCC-128) dirancang dan diimplementasikan sebagai block cipher yang memodifikasi komponen substitution, permutation, diffusion, dan key schedule. Matching langkah kuda berbentuk L digunakan sebagai mekanisme permutation, dan logistic chaotic map digunakan untuk men-generate dynamic S-Box per round.
 
 Dari pengujian awal, encryption-decryption berjalan benar, ciphertext entropy meningkat pada sample pengujian, dan avalanche effect mendekati 50%.
 

@@ -52,6 +52,7 @@ const els = {
   frequencySummary: document.getElementById("frequencySummary"),
   knightWrap: document.getElementById("knightWrap"),
   knightBoard: document.getElementById("knightBoard"),
+  knightMoveBoard: document.getElementById("knightMoveBoard"),
   knightRoute: document.getElementById("knightRoute"),
   knightSummary: document.getElementById("knightSummary")
 };
@@ -310,12 +311,53 @@ function knightPath(start, seed) {
   return path;
 }
 
-function generateKnightPermutation(seed) {
-  for (const start of [seed[0] % 16, seed[1] % 16, seed[2] % 16]) {
-    const path = knightPath(start, seed);
-    if (path.length === 16) return path;
+function knightTargets(index) {
+  const moves = [[2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1], [-1, -2], [1, -2], [2, -1]];
+  const row = Math.floor(index / 4);
+  const col = index % 4;
+  const targets = [];
+  for (const [dr, dc] of moves) {
+    const nr = row + dr;
+    const nc = col + dc;
+    if (nr >= 0 && nr < 4 && nc >= 0 && nc < 4) targets.push(nr * 4 + nc);
   }
-  return Array.from({ length: 16 }, (_, i) => i).sort((a, b) => (seed[a % seed.length] ^ a * 29) - (seed[b % seed.length] ^ b * 29));
+  return targets;
+}
+
+function generateKnightPermutation(seed) {
+  const outputOrder = Array.from({ length: 16 }, (_, i) => i)
+    .sort((a, b) => (seed[(a * 3) % seed.length] ^ a * 29) - (seed[(b * 3) % seed.length] ^ b * 29));
+  const choices = new Map();
+  for (let outputIndex = 0; outputIndex < 16; outputIndex++) {
+    choices.set(outputIndex, knightTargets(outputIndex).sort((a, b) =>
+      ((seed[(outputIndex + a) % seed.length] ^ a * 17) - (seed[(outputIndex + b) % seed.length] ^ b * 17)) || a - b
+    ));
+  }
+  const assigned = new Map();
+  const usedSources = new Set();
+
+  function backtrack() {
+    if (assigned.size === 16) return true;
+    const remaining = outputOrder.filter(index => !assigned.has(index));
+    remaining.sort((a, b) => {
+      const freeA = choices.get(a).filter(source => !usedSources.has(source)).length;
+      const freeB = choices.get(b).filter(source => !usedSources.has(source)).length;
+      return freeA - freeB || outputOrder.indexOf(a) - outputOrder.indexOf(b);
+    });
+    const outputIndex = remaining[0];
+    for (const sourceIndex of choices.get(outputIndex)) {
+      if (usedSources.has(sourceIndex)) continue;
+      assigned.set(outputIndex, sourceIndex);
+      usedSources.add(sourceIndex);
+      if (backtrack()) return true;
+      usedSources.delete(sourceIndex);
+      assigned.delete(outputIndex);
+    }
+    return false;
+  }
+
+  if (!backtrack()) throw new Error("Cannot build knight-move permutation on 4x4 board.");
+  return Array.from({ length: 16 }, (_, index) => assigned.get(index));
 }
 
 async function buildMaterials(key) {
@@ -515,36 +557,69 @@ function currentKnightMaterial(item) {
   return lastMaterials?.[round - 1] || null;
 }
 
+function knightMoveCells(fromIndex, toIndex) {
+  const [fromRow, fromCol] = [Math.floor(fromIndex / 4), fromIndex % 4];
+  const [toRow, toCol] = [Math.floor(toIndex / 4), toIndex % 4];
+  const rowDelta = toRow - fromRow;
+  const colDelta = toCol - fromCol;
+  const rowStep = Math.sign(rowDelta);
+  const colStep = Math.sign(colDelta);
+  const cells = new Map([[fromIndex, "from"], [toIndex, "to"]]);
+
+  if (Math.abs(rowDelta) === 2 && Math.abs(colDelta) === 1) {
+    cells.set((fromRow + rowStep) * 4 + fromCol, "leg");
+    cells.set(toRow * 4 + fromCol, "turn");
+  } else if (Math.abs(rowDelta) === 1 && Math.abs(colDelta) === 2) {
+    cells.set(fromRow * 4 + fromCol + colStep, "leg");
+    cells.set(fromRow * 4 + toCol, "turn");
+  }
+  return cells;
+}
+
 function renderKnightPath(item) {
   const material = currentKnightMaterial(item);
   if (!material) {
     els.knightBoard.innerHTML = "";
+    els.knightMoveBoard.innerHTML = "";
     els.knightRoute.textContent = "-";
     els.knightSummary.textContent = "Jalur kuda muncul setelah proses enkripsi.";
     return;
   }
 
   const permutation = material.permutation;
+  const outputIndex = selectedByte;
+  const sourceIndex = permutation[outputIndex];
   const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
+  const moveCells = knightMoveCells(outputIndex, sourceIndex);
   els.knightWrap.classList.toggle("permutation-active", item.step === "KnightPermutation");
   els.knightSummary.textContent = item.step === "KnightPermutation"
-    ? `Round ${item.round}: output posisi ${selectedByte} mengambil byte dari posisi ${activeSource}.`
-    : `Preview jalur kuda untuk round ${item.round || 1}.`;
+    ? `Round ${item.round}: output posisi ${outputIndex} mengambil source ${sourceIndex} dengan gerak L.`
+    : `Preview gerak L round ${item.round || 1}: output 0 mengambil source ${permutation[0]}.`;
 
-  const orderBySource = new Map(permutation.map((sourceIndex, order) => [sourceIndex, order + 1]));
   els.knightBoard.innerHTML = "";
   for (let index = 0; index < 16; index++) {
     const cell = document.createElement("div");
-    cell.className = `knight-cell${index === activeSource ? " active" : ""}`;
+    const moveClass = moveCells.has(index) ? ` ${moveCells.get(index)}` : "";
+    cell.className = `knight-cell${index === outputIndex ? " active" : ""}${index === activeSource ? " source-active" : ""}${moveClass}`;
     cell.dataset.index = index.toString().padStart(2, "0");
-    const order = orderBySource.get(index);
-    cell.innerHTML = `<span class="knight-step">${order.toString().padStart(2, "0")}</span><span class="knight-source">src ${index}</span>`;
+    cell.innerHTML = `<span class="knight-step">src ${permutation[index].toString().padStart(2, "0")}</span><span class="knight-source">out ${index}</span>`;
     els.knightBoard.appendChild(cell);
   }
 
+  els.knightMoveBoard.innerHTML = "";
+  for (let index = 0; index < 16; index++) {
+    const role = moveCells.get(index) || "";
+    const cell = document.createElement("div");
+    cell.className = `knight-move-cell ${role}`;
+    cell.dataset.index = index.toString().padStart(2, "0");
+    const label = role === "from" ? "OUT" : role === "to" ? "SRC" : role === "turn" ? "TURN" : role === "leg" ? "LEG" : "";
+    cell.textContent = label || ".";
+    els.knightMoveBoard.appendChild(cell);
+  }
+
   els.knightRoute.textContent = permutation
-    .map((sourceIndex, order) => `${(order + 1).toString().padStart(2, "0")}:${sourceIndex}`)
-    .join(" -> ");
+    .map((sourceIndex, outIndex) => `out${outIndex.toString().padStart(2, "0")}<-src${sourceIndex.toString().padStart(2, "0")}`)
+    .join("  ");
 }
 
 function toBin(val) {
