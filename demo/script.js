@@ -578,11 +578,14 @@ function knightMoveCells(fromIndex, toIndex) {
 
 function renderKnightPath(item, before = null, after = null) {
   const material = currentKnightMaterial(item);
-  if (!material) {
+  const isKnightStep = item.step === "KnightPermutation";
+  els.knightWrap.classList.toggle("visible", isKnightStep);
+  if (!material || !isKnightStep) {
     els.knightBoard.innerHTML = "";
     els.knightMoveBoard.innerHTML = "";
     els.knightRoute.textContent = "-";
-    els.knightSummary.textContent = "Jalur kuda muncul setelah proses enkripsi.";
+    els.knightSummary.textContent = "Jalur kuda hanya ditampilkan pada step KnightPermutation.";
+    els.knightWrap.classList.remove("permutation-active");
     return;
   }
 
@@ -593,10 +596,8 @@ function renderKnightPath(item, before = null, after = null) {
   const afterValue = after ? after[outputIndex].toString(16).padStart(2, "0").toUpperCase() : "--";
   const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
   const moveCells = knightMoveCells(outputIndex, sourceIndex);
-  els.knightWrap.classList.toggle("permutation-active", item.step === "KnightPermutation");
-  els.knightSummary.textContent = item.step === "KnightPermutation"
-    ? `Round ${item.round}: BEFORE[src${sourceIndex.toString().padStart(2, "0")}] 0x${beforeValue} -> AFTER[out${outputIndex.toString().padStart(2, "0")}] 0x${afterValue}.`
-    : `Preview gerak L round ${item.round || 1}: output 0 mengambil source ${permutation[0]}.`;
+  els.knightWrap.classList.add("permutation-active");
+  els.knightSummary.textContent = `Round ${item.round}: BEFORE[src${sourceIndex.toString().padStart(2, "0")}] 0x${beforeValue} -> AFTER[out${outputIndex.toString().padStart(2, "0")}] 0x${afterValue}.`;
 
   els.knightBoard.innerHTML = "";
   for (let index = 0; index < 16; index++) {

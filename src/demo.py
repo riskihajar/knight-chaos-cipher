@@ -322,7 +322,7 @@ def render_step(state: DemoState, block_index: int, step_index: int) -> str:
         "Timeline:",
         render_timeline(trace, step_index),
     ]
-    if int(item["round"]) > 0:
+    if step_name == "KnightPermutation":
         body.extend(["", render_knight_path(state, int(item["round"]), 0, previous, current)])
     return format_panel("Step-by-step Animation", body)
 
