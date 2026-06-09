@@ -1,16 +1,116 @@
-=== Knight-Chaos Cipher Demo ===
-Nama  : Muhammad Rizky Hajar
-NIM   : 24.55.2714
-Key   : KCC-24.55.2714-Muhammad-Rizky-Hajar
-Plain : Cyber Security Tugas 3: Knight-Chaos Cipher menggabungkan langkah kuda catur dan logistic chaotic map untuk enkripsi kreatif.
++----------------------------------------------------------------------------+
+| KCC-128 TERMINAL                                                           |
++----------------------------------------------------------------------------+
+| Tugas 3 Cyber Security                                                     |
+| Knight-Chaos Cipher                                                        |
+| Muhammad Rizky Hajar - 24.55.2714                                          |
+|                                                                            |
+| Algoritma : KCC-128 (Block Cipher 128-bit)                                 |
+| Blok      : 16 byte (4x4 matrix)                                           |
+| Round     : 10                                                             |
+| S-Box     : Logistic Chaotic Map dinamis per round                         |
+| Permutasi : Knight's Tour pada board 4x4                                   |
+| Mode      : CBC (Cipher Block Chaining)                                    |
+| Padding   : PKCS#7                                                         |
+|                                                                            |
+| Plaintext : Cyber Security Tugas 3: Knight-Chaos Cipher menggabungkan      |
+| langkah kuda catur dan logistic chaotic map untuk enkripsi kreatif.        |
+| Key       : KCC-24.55.2714-Muhammad-Rizky-Hajar                            |
+| Cipherhex :                                                                |
+| 4748a9da8af6c546587e95ff27d4c0d5a475eada4ed37681067d2e3de67aa3c6f40fd0990d |
+| 779f21b8522a86931a60648ef05901eb60073ee73fe288cb419a0540a288ec69f125affe29 |
+| f9d4342440a929b3b2a5ec5b5b6ec69a0846f8962341ad4f532b7528731a4518c8f5dd35c1 |
+| 70b5a9062b7a5e9b6289a8817bcb3a7ec6                                         |
+| Base64    :                                                                |
+| R0ip2or2xUZYfpX/J9TA1aR16tpO03aBBn0uPeZ6o8b0D9CZDXefIbhSKoaTGmBkjvBZAetgBz |
+| 7nP+KIy0GaBUCiiOxp8SWv/in51DQkQKkps7Kl7FtbbsaaCEb4liNBrU9TK3UocxpFGMj13TXB |
+| cLWpBit6XptiiaiBe8s6fsY=                                                   |
+| Decrypt   : OK - plaintext kembali utuh                                    |
++----------------------------------------------------------------------------+
 
-Ciphertext (hex)   : 4748a9da8af6c546587e95ff27d4c0d5a475eada4ed37681067d2e3de67aa3c6f40fd0990d779f21b8522a86931a60648ef05901eb60073ee73fe288cb419a0540a288ec69f125affe29f9d4342440a929b3b2a5ec5b5b6ec69a0846f8962341ad4f532b7528731a4518c8f5dd35c170b5a9062b7a5e9b6289a8817bcb3a7ec6
-Ciphertext (base64): R0ip2or2xUZYfpX/J9TA1aR16tpO03aBBn0uPeZ6o8b0D9CZDXefIbhSKoaTGmBkjvBZAetgBz7nP+KIy0GaBUCiiOxp8SWv/in51DQkQKkps7Kl7FtbbsaaCEb4liNBrU9TK3UocxpFGMj13TXBcLWpBit6XptiiaiBe8s6fsY=
-Decrypted          : Cyber Security Tugas 3: Knight-Chaos Cipher menggabungkan langkah kuda catur dan logistic chaotic map untuk enkripsi kreatif.
-Decryption OK      : True
++----------------------------------------------------------------------------+
+| STEP-BY-STEP ANIMATION                                                     |
++----------------------------------------------------------------------------+
+| Blok 1/8 - Step 0/61                                                       |
+| Round : 0                                                                  |
+| Operasi : Plaintext block                                                  |
+| Makna   : Blok 16 byte ditampilkan sebagai matriks 4x4 sebelum masuk       |
+| round.                                                                     |
+|                                                                            |
+| Plain block preview:                                                       |
+|   Cyber Security T                                                         |
+|                                                                            |
+| State matrix 4x4:                                                          |
+|   43  79  62  65                                                           |
+|   72  20  53  65                                                           |
+|   63  75  72  69                                                           |
+|   74  79  20  54                                                           |
+|                                                                            |
+| Before : -                                                                 |
+| After  : 43796265722053656375726974792054                                  |
+|                                                                            |
+| Timeline:                                                                  |
+| >00:Initial                        |  01:CBC-XOR-IV                        |
+|  02:AddRoundKey                    |  03:ChaoticSubBytes                   |
+|  04:KnightPermutation              |  05:BitShiftMix                       |
+|  06:ByteDiffusion                  |  07:FeistelMix                        |
+|  08:AddRoundKey                    |  09:ChaoticSubBytes                   |
+|  10:KnightPermutation              |  11:BitShiftMix                       |
+|  12:ByteDiffusion                  |  13:FeistelMix                        |
+|  14:AddRoundKey                    |  15:ChaoticSubBytes                   |
+|  16:KnightPermutation              |  17:BitShiftMix                       |
+|  18:ByteDiffusion                  |  19:FeistelMix                        |
+|  20:AddRoundKey                    |  21:ChaoticSubBytes                   |
+|  22:KnightPermutation              |  23:BitShiftMix                       |
+|  24:ByteDiffusion                  |  25:FeistelMix                        |
+|  26:AddRoundKey                    |  27:ChaoticSubBytes                   |
+|  28:KnightPermutation              |  29:BitShiftMix                       |
+|  30:ByteDiffusion                  |  31:FeistelMix                        |
+|  32:AddRoundKey                    |  33:ChaoticSubBytes                   |
+|  34:KnightPermutation              |  35:BitShiftMix                       |
+|  36:ByteDiffusion                  |  37:FeistelMix                        |
+|  38:AddRoundKey                    |  39:ChaoticSubBytes                   |
+|  40:KnightPermutation              |  41:BitShiftMix                       |
+|  42:ByteDiffusion                  |  43:FeistelMix                        |
+|  44:AddRoundKey                    |  45:ChaoticSubBytes                   |
+|  46:KnightPermutation              |  47:BitShiftMix                       |
+|  48:ByteDiffusion                  |  49:FeistelMix                        |
+|  50:AddRoundKey                    |  51:ChaoticSubBytes                   |
+|  52:KnightPermutation              |  53:BitShiftMix                       |
+|  54:ByteDiffusion                  |  55:FeistelMix                        |
+|  56:AddRoundKey                    |  57:ChaoticSubBytes                   |
+|  58:KnightPermutation              |  59:BitShiftMix                       |
+|  60:ByteDiffusion                  |  61:FeistelMix                        |
++----------------------------------------------------------------------------+
 
-=== Security Analysis Sample ===
-Plaintext entropy  : 4.4017 bit/byte
-Ciphertext entropy : 6.6288 bit/byte
-Avalanche effect   : 50.29%
-Top ciphertext byte frequencies: [('0xa9', 3), ('0xc6', 3), ('0xda', 2), ('0x46', 2), ('0x7e', 2), ('0xd4', 2), ('0x75', 2), ('0x81', 2), ('0x06', 2), ('0x7a', 2)]
++----------------------------------------------------------------------------+
+| ASSEMBLY / CONCAT BLOK -> CIPHERTEXT                                       |
++----------------------------------------------------------------------------+
+| Blok 1 : 4748a9da8af6c546587e95ff27d4c0d5                                  |
+| Blok 2 : a475eada4ed37681067d2e3de67aa3c6                                  |
+| Blok 3 : f40fd0990d779f21b8522a86931a6064                                  |
+| Blok 4 : 8ef05901eb60073ee73fe288cb419a05                                  |
+| Blok 5 : 40a288ec69f125affe29f9d4342440a9                                  |
+| Blok 6 : 29b3b2a5ec5b5b6ec69a0846f8962341                                  |
+| Blok 7 : ad4f532b7528731a4518c8f5dd35c170                                  |
+| Blok 8 : b5a9062b7a5e9b6289a8817bcb3a7ec6                                  |
+|                                                                            |
+| Ciphertext final:                                                          |
+| 4748a9da8af6c546587e95ff27d4c0d5a475eada4ed37681067d2e3de67aa3c6f40fd0990d |
+| 779f21b8522a86931a60648ef05901eb60073ee73fe288cb419a0540a288ec69f125affe29 |
+| f9d4342440a929b3b2a5ec5b5b6ec69a0846f8962341ad4f532b7528731a4518c8f5dd35c1 |
+| 70b5a9062b7a5e9b6289a8817bcb3a7ec6                                         |
++----------------------------------------------------------------------------+
+
++----------------------------------------------------------------------------+
+| SECURITY ANALYSIS                                                          |
++----------------------------------------------------------------------------+
+| Plaintext entropy  : 4.4017 bit/byte                                       |
+|   Keragaman byte sebelum enkripsi.                                         |
+| Ciphertext entropy : 6.6288 bit/byte                                       |
+|   Keragaman byte setelah enkripsi.                                         |
+| Avalanche effect   : 50.29%                                                |
+|   Perubahan ciphertext saat 1 bit plaintext diubah.                        |
+| Top byte frequency : 0xa9:3  0xc6:3  0xda:2  0x46:2  0x7e:2  0xd4:2        |
+| 0x75:2  0x81:2  0x06:2  0x7a:2                                             |
++----------------------------------------------------------------------------+
