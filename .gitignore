@@ -5,6 +5,7 @@ __pycache__/
 # Local QA/build scratch
 build/
 docs/rendered/
+kumpul/
 
 # Submission package generated on demand
 *.zip

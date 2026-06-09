@@ -106,17 +106,19 @@ Selain demo CLI (Python), dibuat juga demo interaktif berbasis web yang menampil
 Implementasi menggunakan Python. Hasil sample run:
 
 - **Decryption OK:** True (plaintext kembali utuh)
-- **Plaintext entropy:** ~4.38 bit/byte
-- **Ciphertext entropy:** ~6.63 bit/byte
-- **Avalanche effect:** ~48.34%
+- **Plaintext:** `Ini adalah Pesan Rahasia`
+- **Key:** `kunci-rahasia-123`
+- **Plaintext entropy:** ~3.23 bit/byte
+- **Ciphertext entropy:** ~4.94 bit/byte
+- **Avalanche effect:** ~50.00%
 
-Entropy naik dari 4.38 ke 6.63 pada sample pengujian, menunjukkan ciphertext punya byte distribution yang lebih uniform dibanding plaintext yang berupa teks biasa dengan karakter berulang. Avalanche 48.34% menunjukkan bahwa perubahan 1 bit pada plaintext membuat hampir separuh bit ciphertext ikut berubah pada sample ini.
+Entropy naik dari 3.23 ke 4.94 pada sample pengujian, menunjukkan ciphertext punya byte distribution yang lebih uniform dibanding plaintext yang berupa teks biasa dengan karakter berulang. Avalanche 50.00% menunjukkan bahwa perubahan 1 bit pada plaintext membuat sekitar separuh bit ciphertext ikut berubah pada sample ini.
 
 ## 7. Analisis Keamanan
 
 **Entropy:** Ciphertext menunjukkan byte distribution yang lebih uniform dibanding plaintext pada sample pengujian. Pattern karakter yang berulang pada teks natural menjadi tersamarkan pada ciphertext.
 
-**Avalanche effect:** Dengan mengubah 1 bit pertama pada plaintext, sekitar 48% bit ciphertext berubah. Ini menjadi indikasi awal bahwa kombinasi dynamic S-Box, knight permutation, rotation, diffusion, dan Feistel mixing membantu proses propagasi perubahan.
+**Avalanche effect:** Dengan mengubah 1 bit pertama pada plaintext, sekitar 50% bit ciphertext berubah. Ini menjadi indikasi awal bahwa kombinasi dynamic S-Box, knight permutation, rotation, diffusion, dan Feistel mixing membantu proses propagasi perubahan.
 
 **Frequency analysis:** Byte yang paling sering muncul pada ciphertext punya frekuensi rendah dan tersebar pada sample pengujian.
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import base64
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,11 +15,8 @@ from knight_chaos_cipher import (
 )
 
 
-DEFAULT_KEY = "KCC-24.55.2714-Muhammad-Rizky-Hajar"
-DEFAULT_TEXT = (
-    "Cyber Security Tugas 3: Knight-Chaos Cipher menggabungkan langkah kuda "
-    "catur dan logistic chaotic map untuk enkripsi kreatif."
-)
+DEFAULT_KEY = "kunci-rahasia-123"
+DEFAULT_TEXT = "Ini adalah Pesan Rahasia"
 
 STEP_INFO = {
     "Initial": (
@@ -511,11 +507,11 @@ def main() -> None:
     parser.add_argument("--trace", action="store_true", help="Print detailed step-by-step trace output.")
     args = parser.parse_args()
 
-    if args.interactive or (len(sys.argv) == 1 and sys.stdin.isatty()):
+    if args.interactive:
         interactive_loop()
         return
 
-    output = run_trace_demo(args.text, args.key) if args.trace or args.sample_run else run_demo(args.text, args.key)
+    output = run_trace_demo(args.text, args.key) if args.trace else run_demo(args.text, args.key)
     print(output)
     if args.sample_run:
         args.sample_run.write_text(output + "\n", encoding="utf-8")

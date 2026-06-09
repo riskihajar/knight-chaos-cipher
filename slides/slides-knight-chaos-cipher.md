@@ -84,20 +84,20 @@ x(n+1) = r * x(n) * (1 - x(n))
 # Hasil Sample Run
 
 ```text
-Plaintext:  "Cyber Security Tugas 3: ..."
-Key:        "KCC-24.55.2714-Muhammad-Rizky-Hajar"
+Plaintext:  "Ini adalah Pesan Rahasia"
+Key:        "kunci-rahasia-123"
 Decryption: OK ✓
 ```
 
 | Metrik | Nilai |
 |--------|-------|
-| Plaintext entropy | ~4.40 bit/byte |
-| Ciphertext entropy | ~6.63 bit/byte |
-| Avalanche effect | ~50.29% |
+| Plaintext entropy | ~3.23 bit/byte |
+| Ciphertext entropy | ~4.94 bit/byte |
+| Avalanche effect | ~50.00% |
 
 # Analisis Keamanan
 
-- **Entropy:** naik dari 4.40 → 6.63 bit/byte (lebih uniform).
+- **Entropy:** naik dari 3.23 → 4.94 bit/byte (lebih uniform).
 - **Avalanche:** ~50% — ubah 1 bit input, ~setengah bit output berubah.
 - **Frequency:** tidak ada byte value yang dominan pada ciphertext.
 - **vs. Caesar/Vigenere:** KCC-128 memutus hubungan langsung plaintext–ciphertext melalui non-linear S-Box + permutation + diffusion.

@@ -54,13 +54,13 @@ Secara ringkas: block size 128 bit, 10 round, S-Box dari logistic chaotic map, p
 
 ## Slide 9: Hasil Sample Run
 
-Saya jalankan encryption dengan plaintext "Cyber Security Tugas 3..." dan key berbasis NIM saya. Hasilnya: decryption berhasil — plaintext kembali utuh. Entropy plaintext sekitar 4.4 bit per byte, naik ke 6.6 setelah encryption. Dan avalanche effect-nya sekitar 50 persen — artinya ubah 1 bit input, sekitar setengah bit output berubah.
+Saya jalankan encryption dengan plaintext "Ini adalah Pesan Rahasia" dan key "kunci-rahasia-123". Hasilnya: decryption berhasil — plaintext kembali utuh. Entropy plaintext sekitar 3.23 bit per byte, naik ke 4.94 setelah encryption. Dan avalanche effect-nya 50 persen — artinya ubah 1 bit input, sekitar setengah bit output berubah.
 
 ---
 
 ## Slide 10: Analisis Keamanan
 
-Entropy naik dari 4.4 ke 6.6 — ciphertext distribusi byte-nya lebih uniform pada sample pengujian. Avalanche mendekati 50 persen, yang menjadi indikasi awal bahwa diffusion berjalan cukup efektif pada sample ini. Distribusi byte ciphertext juga terlihat lebih tersebar, tanpa satu value yang dominan. KCC-128 menyamarkan hubungan plaintext–ciphertext lewat non-linear S-Box, permutation, dan diffusion — tiga layer sekaligus.
+Entropy naik dari 3.23 ke 4.94 — ciphertext distribusi byte-nya lebih uniform pada sample pengujian. Avalanche 50 persen, yang menjadi indikasi awal bahwa diffusion berjalan cukup efektif pada sample ini. Distribusi byte ciphertext juga terlihat lebih tersebar, tanpa satu value yang dominan. KCC-128 menyamarkan hubungan plaintext–ciphertext lewat non-linear S-Box, permutation, dan diffusion — tiga layer sekaligus.
 
 ---
 
