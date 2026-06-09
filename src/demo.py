@@ -336,6 +336,33 @@ def render_assembly(state: DemoState) -> str:
     return format_panel("Assembly / Concat Blok -> Ciphertext", body)
 
 
+def render_simple_summary(state: DemoState) -> str:
+    """Render compact one-screen output for quick CLI demonstration."""
+    frequencies = "  ".join(
+        f"{byte}:{count}" for byte, count in frequency_summary(state.ciphertext, limit=5)
+    )
+    return format_panel(
+        "KCC-128 Simple Demo",
+        [
+            f"Plaintext        : {state.plaintext}",
+            f"Key              : {state.key}",
+            f"Ciphertext hex   : {state.ciphertext.hex()}",
+            f"Ciphertext base64: {base64.b64encode(state.ciphertext).decode('ascii')}",
+            f"Decrypted        : {state.decrypted}",
+            f"Decryption check : {'OK - plaintext kembali utuh' if state.decrypted == state.plaintext else 'Gagal'}",
+            "",
+            "Security Analysis:",
+            f"  Plaintext entropy  : {shannon_entropy(state.plaintext_bytes):.4f} bit/byte",
+            f"  Ciphertext entropy : {shannon_entropy(state.ciphertext):.4f} bit/byte",
+            f"  Avalanche effect   : {avalanche_effect(state.cipher, state.plaintext_bytes):.2f}%",
+            f"  Top byte frequency : {frequencies}",
+            "",
+            "Untuk trace per step: python3 src/demo.py --interactive",
+            "Untuk output trace lengkap: python3 src/demo.py --trace",
+        ],
+    )
+
+
 def prompt_with_default(label: str, default: str) -> str:
     """Ask for terminal input and return the default when the user presses Enter."""
     print(f"\nDefault {label}:")
@@ -455,7 +482,13 @@ def interactive_loop() -> None:
 
 
 def run_demo(plaintext: str, key: str) -> str:
-    """Run one complete encryption/decryption demo and format analysis output."""
+    """Run compact encryption/decryption demo and format analysis output."""
+    state = build_state(plaintext, key)
+    return render_simple_summary(state)
+
+
+def run_trace_demo(plaintext: str, key: str) -> str:
+    """Run one complete trace walkthrough and format detailed output."""
     state = build_state(plaintext, key)
     return "\n\n".join(
         [
@@ -475,13 +508,14 @@ def main() -> None:
     parser.add_argument("--key", default=DEFAULT_KEY, help="Encryption key.")
     parser.add_argument("--sample-run", type=Path, help="Optional path to save demo output.")
     parser.add_argument("--interactive", action="store_true", help="Open interactive CLI walkthrough.")
+    parser.add_argument("--trace", action="store_true", help="Print detailed step-by-step trace output.")
     args = parser.parse_args()
 
     if args.interactive or (len(sys.argv) == 1 and sys.stdin.isatty()):
         interactive_loop()
         return
 
-    output = run_demo(args.text, args.key)
+    output = run_trace_demo(args.text, args.key) if args.trace or args.sample_run else run_demo(args.text, args.key)
     print(output)
     if args.sample_run:
         args.sample_run.write_text(output + "\n", encoding="utf-8")

@@ -21,7 +21,7 @@ Folder ini berisi rancangan, implementasi, analisis, dan demo interaktif algorit
 python3 src/demo.py
 ```
 
-Demo CLI berjalan interaktif saat dibuka langsung dari terminal. Plaintext dan key bisa diganti, lalu gunakan command berikut:
+Jika dibuka langsung dari terminal, demo CLI masuk mode interaktif. Plaintext dan key bisa diganti, lalu gunakan command berikut:
 
 - `n` / `p`: maju atau mundur step round.
 - `b <nomor>`: pindah blok ciphertext.
@@ -30,6 +30,18 @@ Demo CLI berjalan interaktif saat dibuka langsung dari terminal. Plaintext dan k
 - `k`: tampilkan jalur kuda untuk round aktif.
 - `c`: tampilkan assembly block ke ciphertext final.
 - `d`: uji decrypt ciphertext hex dengan key aktif.
+
+Untuk output ringkas satu layar:
+
+```bash
+python3 src/demo.py --text "contoh plaintext" --key "contoh-key"
+```
+
+Untuk output trace lengkap tanpa mode interaktif:
+
+```bash
+python3 src/demo.py --trace
+```
 
 Untuk menyimpan bukti sample run:
 
