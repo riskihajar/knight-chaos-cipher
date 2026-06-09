@@ -36,8 +36,6 @@ const els = {
   byteTable: document.getElementById("byteTable"),
   manualCalc: document.getElementById("manualCalc"),
   roundKeyDisplay: document.getElementById("roundKeyDisplay"),
-  permDisplay: document.getElementById("permDisplay"),
-  permBox: document.getElementById("permBox"),
   sboxDisplay: document.getElementById("sboxDisplay"),
   sboxBox: document.getElementById("sboxBox"),
   blockSelect: document.getElementById("blockSelect"),
@@ -53,7 +51,6 @@ const els = {
   knightWrap: document.getElementById("knightWrap"),
   knightMoveBoard: document.getElementById("knightMoveBoard"),
   knightStateGrids: document.getElementById("knightStateGrids"),
-  knightRoute: document.getElementById("knightRoute"),
   knightSummary: document.getElementById("knightSummary")
 };
 
@@ -583,7 +580,6 @@ function renderKnightPath(item, before = null, after = null) {
   if (!material || !isKnightStep) {
     els.knightMoveBoard.innerHTML = "";
     els.knightStateGrids.innerHTML = "";
-    els.knightRoute.textContent = "-";
     els.knightSummary.textContent = "Jalur kuda hanya ditampilkan pada step KnightPermutation.";
     els.knightWrap.classList.remove("permutation-active");
     return;
@@ -634,10 +630,6 @@ function renderKnightPath(item, before = null, after = null) {
     wrapper.appendChild(caption);
     els.knightStateGrids.appendChild(wrapper);
   }
-
-  els.knightRoute.textContent = permutation
-    .map((sourceIndex, outIndex) => `AFTER${outIndex.toString().padStart(2, "0")}<=BEFORE${sourceIndex.toString().padStart(2, "0")}`)
-    .join("  ");
 }
 
 function toBin(val) {
@@ -735,10 +727,6 @@ function renderDetail() {
       calc += `BEFORE[${srcIdx}] = 0x${before[srcIdx].toString(16).padStart(2, "0").toUpperCase()}\n`;
       calc += `AFTER[${idx}]  = 0x${b0After.toString(16).padStart(2, "0").toUpperCase()}\n`;
       calc += `Angka ${srcIdx} dan ${idx} adalah nomor kecil di kiri atas cell matriks.`;
-      els.permBox.style.display = "block";
-      els.permDisplay.textContent = mat.permutation
-        .map((sourceIndex, outIndex) => `AFTER${outIndex.toString().padStart(2, "0")}<=BEFORE${sourceIndex.toString().padStart(2, "0")}`)
-        .join("  ");
       break;
     case "BitShiftMix":
       const rot = mat.rotations[idx];
@@ -771,7 +759,6 @@ function renderDetail() {
 
   els.manualCalc.textContent = calc;
 
-  if (item.step !== "KnightPermutation") els.permBox.style.display = "none";
   if (item.step !== "ChaoticSubBytes") els.sboxBox.style.display = "none";
 }
 
