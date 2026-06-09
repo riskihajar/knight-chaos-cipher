@@ -18,7 +18,7 @@ KCC-128 ini block cipher, block size-nya 128 bit atau 16 byte. Setiap block saya
 
 ## Slide 3: Pembeda dari Cipher Umum
 
-Kalau dibanding AES: AES menggunakan satu S-Box tetap untuk semua round — di KCC-128, S-Box-nya berubah tiap round. AES menggunakan ShiftRows yang gesernya linear — KCC-128 menggunakan knight's tour yang loncatnya non-linear. Dan key schedule di KCC-128 juga menentukan bentuk S-Box, rute kuda, dan jumlah rotasi bit. Jadi key mengubah seluruh struktur cipher sekaligus.
+Kalau dibanding AES: AES menggunakan satu S-Box tetap untuk semua round — di KCC-128, S-Box-nya berubah tiap round. AES menggunakan ShiftRows yang gesernya linear — KCC-128 menggunakan knight's tour yang loncatnya non-linear. Dan key schedule di KCC-128 juga menentukan beberapa komponen utama round, seperti bentuk S-Box, rute kuda, round key, dan jumlah rotasi bit.
 
 ---
 
@@ -60,19 +60,19 @@ Saya jalankan encryption dengan plaintext "Cyber Security Tugas 3..." dan key be
 
 ## Slide 10: Analisis Keamanan
 
-Entropy naik dari 4.4 ke 6.6 — ciphertext distribusi byte-nya lebih uniform. Avalanche 50 persen sesuai ekspektasi untuk cipher dengan diffusion yang baik. Distribusi byte ciphertext juga merata, tanpa satu value yang dominan. KCC-128 memutus hubungan langsung plaintext–ciphertext lewat non-linear S-Box, permutation, dan diffusion — tiga layer sekaligus.
+Entropy naik dari 4.4 ke 6.6 — ciphertext distribusi byte-nya lebih uniform pada sample pengujian. Avalanche mendekati 50 persen, yang menjadi indikasi awal bahwa diffusion berjalan cukup efektif pada sample ini. Distribusi byte ciphertext juga terlihat lebih tersebar, tanpa satu value yang dominan. KCC-128 menyamarkan hubungan plaintext–ciphertext lewat non-linear S-Box, permutation, dan diffusion — tiga layer sekaligus.
 
 ---
 
 ## Slide 11: Keterbatasan
 
-Dari sisi keterbatasan: IV-nya masih deterministic dari key, idealnya random. Saat ini cipher menjamin confidentiality — untuk integrity, bisa ditambahkan MAC atau HMAC di pengembangan selanjutnya. Kualitas S-Box dari sisi nonlinearity juga bisa diuji lebih lanjut. Dan pengujian bisa diperluas dengan dataset yang lebih besar.
+Dari sisi keterbatasan: IV-nya masih deterministic dari key, idealnya random. Saat ini rancangan berfokus pada confidentiality — untuk integrity, bisa ditambahkan MAC atau HMAC di pengembangan selanjutnya. Kualitas S-Box dari sisi nonlinearity juga bisa diuji lebih lanjut. Dan pengujian bisa diperluas dengan dataset yang lebih besar.
 
 ---
 
 ## Slide 12: Kesimpulan
 
-Jadi KCC-128 ini memodifikasi empat komponen cipher: substitution menggunakan chaotic S-Box, permutation menggunakan knight's tour, diffusion menggunakan XOR chaining dan Feistel mix, dan key schedule yang mengubah seluruh struktur round. Dari pengujian, encryption-decryption bekerja benar dan avalanche effect-nya mendekati 50 persen.
+Jadi KCC-128 ini memodifikasi empat komponen cipher: substitution menggunakan chaotic S-Box, permutation menggunakan knight's tour, diffusion menggunakan XOR chaining dan Feistel mix, dan key schedule yang ikut menentukan beberapa parameter utama round. Dari pengujian, encryption-decryption bekerja benar dan avalanche effect-nya mendekati 50 persen.
 
 ---
 
@@ -94,4 +94,4 @@ Jadi KCC-128 ini memodifikasi empat komponen cipher: substitution menggunakan ch
 → Langkah kuda menghasilkan perpindahan non-linear — lompat bentuk L yang menyebar ke baris dan kolom berbeda sekaligus. Hasilnya permutation yang lebih sulit diprediksi.
 
 **"Bedanya dengan AES?"**
-→ AES S-Box tetap, ShiftRows linear, key schedule menghasilkan round key saja. KCC-128 S-Box berubah tiap round, permutation non-linear dari chess, dan key mengubah seluruh struktur round.
+→ AES S-Box tetap, ShiftRows linear, key schedule menghasilkan round key. KCC-128 S-Box berubah tiap round, permutation non-linear dari chess, dan key ikut menentukan beberapa parameter utama round.

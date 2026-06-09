@@ -16,7 +16,7 @@ Ide utama KCC-128 adalah memodifikasi komponen inti cipher dengan cara yang berb
 
 KCC-128 bekerja sebagai block cipher dengan block size 128 bit (16 byte). Setiap block diperlakukan sebagai matrix 4×4. Algoritma berjalan selama 10 round, dimana setiap round menggunakan key material yang berbeda: round key, dynamic S-Box, inverse S-Box, knight permutation path, inverse permutation, dan rotation pattern.
 
-Key dari user diproses dengan SHA-256 untuk menghasilkan master seed. Dari master seed ini, semua round material di-derive. Yang menarik adalah key schedule tidak hanya menghasilkan round key untuk XOR, tapi juga menentukan bentuk S-Box, route permutation, dan jumlah bit rotation. Jadi, key benar-benar mengubah seluruh struktur transformasi — bukan hanya nilai XOR-nya.
+Key dari user diproses dengan SHA-256 untuk menghasilkan master seed. Dari master seed ini, semua round material di-derive. Yang menarik adalah key schedule menghasilkan round key untuk XOR sekaligus menentukan beberapa parameter utama round, seperti bentuk S-Box, route permutation, dan jumlah bit rotation.
 
 ## 3. Arsitektur Knight-Chaos Cipher
 
@@ -40,11 +40,11 @@ Dibanding shift linear seperti ShiftRows di AES, knight move menghasilkan perpin
 
 Setelah substitution dan permutation, setiap byte di-rotate left sejumlah bit (jumlahnya ditentukan round key). Lalu dilakukan byte diffusion: setiap byte di-XOR dengan byte sebelumnya secara chaining. Terakhir ada Feistel-like mixing yang mencampur byte secara pair-wise dalam 3 pass.
 
-Kenapa perlu layer ini? Substitution mengacak value byte, permutation mengacak posisi byte, tapi keduanya belum menyebarkan perubahan antar byte. Diffusion dan Feistel mixing memastikan kalau satu byte berubah, efeknya propagate ke byte-byte lain.
+Kenapa perlu layer ini? Substitution mengacak value byte, permutation mengacak posisi byte, tapi keduanya belum menyebarkan perubahan antar byte. Diffusion dan Feistel mixing membantu perubahan satu byte ikut memengaruhi byte-byte lain.
 
 ### 3.4 Mode Chaining (CBC)
 
-Untuk message yang lebih panjang dari 16 byte, KCC-128 menggunakan mode CBC (Cipher Block Chaining). Block pertama di-XOR dengan IV yang di-derive dari key, block kedua dan seterusnya di-XOR dengan ciphertext block sebelumnya. Tujuannya agar block plaintext yang sama di posisi berbeda tidak menghasilkan ciphertext yang sama.
+Untuk message yang lebih panjang dari 16 byte, KCC-128 menggunakan mode CBC (Cipher Block Chaining). Block pertama di-XOR dengan IV yang di-derive dari key, block kedua dan seterusnya di-XOR dengan ciphertext block sebelumnya. Tujuannya agar setiap block memiliki dependensi pada block sebelumnya.
 
 ## 4. Proses Encryption dan Decryption
 
@@ -97,7 +97,7 @@ Rumus Shannon entropy:
 H(X) = - Σ p(x) log2 p(x)
 ```
 
-Maximum entropy adalah 8 bit/byte (perfectly uniform distribution). Untuk avalanche effect, idealnya sekitar 50% — artinya perubahan kecil pada input mengubah kira-kira setengah bit output.
+Maximum entropy adalah 8 bit/byte pada distribusi yang sangat uniform. Untuk avalanche effect, nilai sekitar 50% sering dipakai sebagai indikator awal bahwa perubahan kecil pada input menyebar ke banyak bit output.
 
 Selain demo CLI (Python), dibuat juga demo interaktif berbasis web yang menampilkan matrix 4×4 dan perubahan state per step.
 
@@ -110,17 +110,17 @@ Implementasi menggunakan Python. Hasil sample run:
 - **Ciphertext entropy:** ~6.63 bit/byte
 - **Avalanche effect:** ~48.34%
 
-Entropy naik dari 4.38 ke 6.63, menunjukkan ciphertext punya byte distribution yang lebih uniform dibanding plaintext (yang berupa teks biasa dengan karakter berulang). Avalanche 48.34% artinya mengubah 1 bit pada plaintext menyebabkan hampir separuh bit ciphertext berubah.
+Entropy naik dari 4.38 ke 6.63 pada sample pengujian, menunjukkan ciphertext punya byte distribution yang lebih uniform dibanding plaintext yang berupa teks biasa dengan karakter berulang. Avalanche 48.34% menunjukkan bahwa perubahan 1 bit pada plaintext membuat hampir separuh bit ciphertext ikut berubah pada sample ini.
 
 ## 7. Analisis Keamanan
 
-**Entropy:** Ciphertext menunjukkan byte distribution yang lebih uniform dibanding plaintext. Pattern karakter yang berulang pada teks natural sudah tidak terlihat pada ciphertext.
+**Entropy:** Ciphertext menunjukkan byte distribution yang lebih uniform dibanding plaintext pada sample pengujian. Pattern karakter yang berulang pada teks natural menjadi tersamarkan pada ciphertext.
 
-**Avalanche effect:** Dengan mengubah 1 bit pertama pada plaintext, sekitar 48% bit ciphertext berubah. Ini menunjukkan bahwa kombinasi dynamic S-Box, knight permutation, rotation, diffusion, dan Feistel mixing bekerja cukup baik dalam men-propagate perubahan.
+**Avalanche effect:** Dengan mengubah 1 bit pertama pada plaintext, sekitar 48% bit ciphertext berubah. Ini menjadi indikasi awal bahwa kombinasi dynamic S-Box, knight permutation, rotation, diffusion, dan Feistel mixing membantu proses propagasi perubahan.
 
-**Frequency analysis:** Byte yang paling sering muncul pada ciphertext punya frekuensi rendah dan tersebar — tidak ada dominasi satu value tertentu.
+**Frequency analysis:** Byte yang paling sering muncul pada ciphertext punya frekuensi rendah dan tersebar pada sample pengujian.
 
-**Perbandingan dengan cipher klasik:** Caesar dan Vigenere rentan terhadap frequency analysis karena hubungan plaintext–ciphertext masih langsung (substitution per karakter/posisi). KCC-128 memutus hubungan ini melalui non-linear S-Box, permutation yang men-shuffle posisi, dan diffusion yang men-propagate perubahan antar byte.
+**Perbandingan dengan cipher klasik:** Caesar dan Vigenere rentan terhadap frequency analysis karena hubungan plaintext–ciphertext masih langsung (substitution per karakter/posisi). KCC-128 menyamarkan hubungan ini melalui non-linear S-Box, permutation yang men-shuffle posisi, dan diffusion yang men-propagate perubahan antar byte.
 
 Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear cryptanalysis, randomness test dengan dataset besar, dan evaluasi terhadap chosen-plaintext attack.
 
@@ -129,20 +129,20 @@ Pengujian lanjutan yang bisa dilakukan: differential cryptanalysis, linear crypt
 **Kelebihan:**
 - S-Box tidak tetap, berubah setiap round berdasarkan chaotic map
 - Non-linear permutation dari knight's tour pattern
-- Key schedule memengaruhi semua komponen (bukan hanya round key)
+- Key schedule memengaruhi beberapa komponen utama, seperti round key, S-Box, route permutation, dan bit rotation
 - Semua operation invertible sehingga decryption bekerja dengan benar
 
 **Keterbatasan:**
 - IV di-derive secara deterministic dari key. Idealnya IV random dan disimpan bersama ciphertext
 - Pengujian masih menggunakan sample kecil. Test dengan data lebih besar bisa memberi gambaran yang lebih akurat
-- Belum ada mekanisme authentication (MAC/HMAC). Cipher hanya menjamin confidentiality, belum integrity
+- Belum ada mekanisme authentication (MAC/HMAC). Rancangan saat ini berfokus pada confidentiality, belum integrity
 - Kualitas kriptografis S-Box (nonlinearity, differential uniformity) belum diuji secara formal
 
 ## 9. Kesimpulan
 
 Knight-Chaos Cipher (KCC-128) dirancang dan diimplementasikan sebagai block cipher yang memodifikasi komponen substitution, permutation, diffusion, dan key schedule. Knight's tour digunakan sebagai mekanisme permutation, dan logistic chaotic map digunakan untuk men-generate dynamic S-Box per round.
 
-Dari pengujian awal, encryption-decryption berjalan benar, ciphertext entropy meningkat signifikan, dan avalanche effect mendekati 50%.
+Dari pengujian awal, encryption-decryption berjalan benar, ciphertext entropy meningkat pada sample pengujian, dan avalanche effect mendekati 50%.
 
 ## Referensi
 
