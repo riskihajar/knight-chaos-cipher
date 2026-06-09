@@ -12,6 +12,7 @@ CASES = [
 
 
 def main() -> None:
+    """Run small correctness tests for empty, short, and longer plaintext cases."""
     for index, (text, key) in enumerate(CASES, start=1):
         cipher = KnightChaosCipher(key)
         ciphertext = cipher.encrypt(text.encode("utf-8"))

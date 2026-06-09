@@ -20,6 +20,7 @@ DEFAULT_TEXT = (
 
 
 def run_demo(plaintext: str, key: str) -> str:
+    """Run one complete encryption/decryption demo and format analysis output."""
     cipher = KnightChaosCipher(key)
     plaintext_bytes = plaintext.encode("utf-8")
     ciphertext = cipher.encrypt(plaintext_bytes)
@@ -47,6 +48,7 @@ def run_demo(plaintext: str, key: str) -> str:
 
 
 def main() -> None:
+    """Parse CLI arguments, print demo output, and optionally save sample run."""
     parser = argparse.ArgumentParser(description="Demo Knight-Chaos Cipher.")
     parser.add_argument("--text", default=DEFAULT_TEXT, help="Plaintext to encrypt.")
     parser.add_argument("--key", default=DEFAULT_KEY, help="Encryption key.")

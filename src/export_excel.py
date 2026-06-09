@@ -11,10 +11,12 @@ OUTPUT_DIR = Path(__file__).resolve().parent.parent / "excel"
 
 
 def fmt_bytes(data: bytes) -> list[str]:
+    """Format bytes as uppercase hexadecimal strings for spreadsheet cells."""
     return [f"0x{b:02X}" for b in data]
 
 
 def main():
+    """Export one-block round walkthrough to CSV and XLSX when openpyxl exists."""
     OUTPUT_DIR.mkdir(exist_ok=True)
     cipher = KnightChaosCipher(KEY)
     plain_bytes = PLAINTEXT.encode("utf-8")
@@ -27,6 +29,7 @@ def main():
     rows.append(header)
 
     def add_row(rnd, step, explain, state):
+        """Append one labeled state row to the walkthrough table."""
         rows.append([str(rnd), step, explain] + fmt_bytes(state))
 
     add_row(0, "Plaintext (ASCII)", "Teks asli diubah ke byte", plain_bytes)

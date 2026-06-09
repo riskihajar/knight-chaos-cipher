@@ -20,29 +20,35 @@ BOARD_SIZE = 4
 
 
 def _sha256(data: bytes) -> bytes:
+    """Return SHA-256 digest bytes for deterministic key/seed derivation."""
     return hashlib.sha256(data).digest()
 
 
 def _xor_bytes(left: bytes, right: bytes) -> bytes:
+    """XOR two byte strings position-by-position."""
     return bytes(a ^ b for a, b in zip(left, right))
 
 
 def _rotl(value: int, amount: int) -> int:
+    """Rotate one byte to the left by amount bits."""
     amount %= 8
     return ((value << amount) | (value >> (8 - amount))) & 0xFF
 
 
 def _rotr(value: int, amount: int) -> int:
+    """Rotate one byte to the right by amount bits."""
     amount %= 8
     return ((value >> amount) | (value << (8 - amount))) & 0xFF
 
 
 def pkcs7_pad(data: bytes, block_size: int = BLOCK_SIZE) -> bytes:
+    """Pad data so its length becomes a multiple of the block size."""
     pad_len = block_size - (len(data) % block_size)
     return data + bytes([pad_len] * pad_len)
 
 
 def pkcs7_unpad(data: bytes, block_size: int = BLOCK_SIZE) -> bytes:
+    """Remove PKCS#7 padding and validate that the padding bytes are correct."""
     if not data or len(data) % block_size != 0:
         raise ValueError("Invalid padded data length.")
     pad_len = data[-1]
@@ -55,6 +61,8 @@ def pkcs7_unpad(data: bytes, block_size: int = BLOCK_SIZE) -> bytes:
 
 @dataclass(frozen=True)
 class RoundMaterial:
+    """All values needed by one encryption/decryption round."""
+
     key: bytes
     sbox: tuple[int, ...]
     inverse_sbox: tuple[int, ...]
@@ -67,6 +75,7 @@ class KnightChaosCipher:
     """Encrypts and decrypts bytes with the KCC-128 algorithm."""
 
     def __init__(self, key: str | bytes, rounds: int = ROUNDS) -> None:
+        """Build cipher instance and derive IV plus all round materials."""
         if isinstance(key, str):
             key_bytes = key.encode("utf-8")
         else:
@@ -83,6 +92,7 @@ class KnightChaosCipher:
         )
 
     def encrypt(self, plaintext: bytes) -> bytes:
+        """Encrypt arbitrary-length plaintext using padding and CBC-style chaining."""
         padded = pkcs7_pad(plaintext)
         previous = self.iv
         output = bytearray()
@@ -94,6 +104,7 @@ class KnightChaosCipher:
         return bytes(output)
 
     def decrypt(self, ciphertext: bytes) -> bytes:
+        """Decrypt ciphertext, reverse CBC-style chaining, and remove padding."""
         if len(ciphertext) % BLOCK_SIZE != 0:
             raise ValueError("Ciphertext length must be a multiple of 16 bytes.")
         previous = self.iv
@@ -107,14 +118,17 @@ class KnightChaosCipher:
         return pkcs7_unpad(padded)
 
     def encrypt_text(self, plaintext: str) -> str:
+        """Encrypt UTF-8 text and return ciphertext as Base64 text."""
         ciphertext = self.encrypt(plaintext.encode("utf-8"))
         return base64.b64encode(ciphertext).decode("ascii")
 
     def decrypt_text(self, ciphertext_b64: str) -> str:
+        """Decode Base64 ciphertext, decrypt it, and return UTF-8 plaintext."""
         ciphertext = base64.b64decode(ciphertext_b64)
         return self.decrypt(ciphertext).decode("utf-8")
 
     def encrypt_block(self, block: bytes) -> bytes:
+        """Encrypt one 16-byte block through all substitution/permutation rounds."""
         if len(block) != BLOCK_SIZE:
             raise ValueError("Block must be exactly 16 bytes.")
         state = block
@@ -128,6 +142,7 @@ class KnightChaosCipher:
         return state
 
     def decrypt_block(self, block: bytes) -> bytes:
+        """Decrypt one 16-byte block by applying every round inverse in reverse."""
         if len(block) != BLOCK_SIZE:
             raise ValueError("Block must be exactly 16 bytes.")
         state = block
@@ -162,6 +177,7 @@ class KnightChaosCipher:
         return trace
 
     def _build_round_material(self, round_index: int) -> RoundMaterial:
+        """Derive the round key, S-Box, permutation, and rotations for one round."""
         round_seed = _sha256(self.master_seed + round_index.to_bytes(2, "big"))
         key = self._expand_round_key(round_seed)
         sbox = self._generate_sbox(round_seed, round_index)
@@ -172,6 +188,7 @@ class KnightChaosCipher:
         return RoundMaterial(key, sbox, inverse_sbox, permutation, inverse_permutation, rotations)
 
     def _expand_round_key(self, seed: bytes) -> bytes:
+        """Expand a round seed into exactly 16 bytes of round key material."""
         expanded = bytearray()
         counter = 0
         while len(expanded) < BLOCK_SIZE:
@@ -180,6 +197,7 @@ class KnightChaosCipher:
         return bytes(expanded[:BLOCK_SIZE])
 
     def _generate_sbox(self, seed: bytes, round_index: int) -> tuple[int, ...]:
+        """Generate a dynamic bijective S-Box using a logistic chaotic map."""
         seed_int = int.from_bytes(seed, "big")
         x = ((seed_int % 900000) + 9999) / 1000000.0
         r = 3.99 - ((seed[0] + round_index) % 10) / 1000.0
@@ -192,6 +210,7 @@ class KnightChaosCipher:
         return tuple(item for _, item in sorted(values))
 
     def _generate_knight_permutation(self, seed: bytes) -> tuple[int, ...]:
+        """Generate a seed-dependent 16-position permutation from knight moves."""
         starts = [seed[0] % BLOCK_SIZE, seed[1] % BLOCK_SIZE, seed[2] % BLOCK_SIZE]
         candidates = []
         for start in starts:
@@ -203,6 +222,7 @@ class KnightChaosCipher:
         return tuple(sorted(range(BLOCK_SIZE), key=lambda i: seed[i % len(seed)] ^ (i * 29)))
 
     def _knight_path(self, start: int, seed: bytes) -> list[int]:
+        """Build a path over the 4x4 board using legal chess knight moves."""
         moves = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
         path = [start]
         visited = {start}
@@ -225,6 +245,7 @@ class KnightChaosCipher:
         return path
 
     def _onward_count(self, index: int, visited: set[int]) -> int:
+        """Count available next knight moves from one board index."""
         moves = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
         row, col = divmod(index, BOARD_SIZE)
         count = 0
@@ -237,6 +258,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _permute(state: bytes, permutation: Iterable[int]) -> bytes:
+        """Reorder state bytes according to an output-index to source-index map."""
         source = list(state)
         output = [0] * BLOCK_SIZE
         for output_index, source_index in enumerate(permutation):
@@ -245,6 +267,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _diffuse(state: bytes, round_key: bytes) -> bytes:
+        """Apply forward byte diffusion so earlier bytes influence later bytes."""
         output = [0] * BLOCK_SIZE
         carry = round_key[0]
         for i, value in enumerate(state):
@@ -255,6 +278,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _undiffuse(state: bytes, round_key: bytes) -> bytes:
+        """Reverse the byte diffusion step during decryption."""
         output = [0] * BLOCK_SIZE
         carry = round_key[0]
         for i, value in enumerate(state):
@@ -265,6 +289,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _feistel_mix(state: bytes, round_key: bytes) -> bytes:
+        """Apply invertible 3-pass byte mixing to strengthen diffusion."""
         mixed = list(state)
         for pass_index in range(3):
             for i in range(BLOCK_SIZE):
@@ -275,6 +300,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _inverse_feistel_mix(state: bytes, round_key: bytes) -> bytes:
+        """Reverse the Feistel-like byte mixing step."""
         mixed = list(state)
         for pass_index in range(2, -1, -1):
             for i in range(BLOCK_SIZE - 1, -1, -1):
@@ -285,6 +311,7 @@ class KnightChaosCipher:
 
     @staticmethod
     def _inverse_tuple(values: tuple[int, ...]) -> tuple[int, ...]:
+        """Create inverse mapping for an S-Box or permutation tuple."""
         inverse = [0] * len(values)
         for i, value in enumerate(values):
             inverse[value] = i
@@ -292,6 +319,7 @@ class KnightChaosCipher:
 
 
 def shannon_entropy(data: bytes) -> float:
+    """Calculate Shannon entropy in bits per byte for analysis output."""
     if not data:
         return 0.0
     counter = Counter(data)
@@ -300,10 +328,12 @@ def shannon_entropy(data: bytes) -> float:
 
 
 def bit_difference(left: bytes, right: bytes) -> int:
+    """Count bit positions that differ between two byte strings."""
     return sum((a ^ b).bit_count() for a, b in zip(left, right))
 
 
 def avalanche_effect(cipher: KnightChaosCipher, plaintext: bytes) -> float:
+    """Measure ciphertext bit-change percentage after flipping one plaintext bit."""
     if not plaintext:
         plaintext = b"\x00"
     modified = bytearray(plaintext)
@@ -315,5 +345,6 @@ def avalanche_effect(cipher: KnightChaosCipher, plaintext: bytes) -> float:
 
 
 def frequency_summary(data: bytes, limit: int = 10) -> list[tuple[str, int]]:
+    """Return the most frequent byte values as compact hex/count pairs."""
     counter = Counter(data)
     return [(f"0x{byte:02x}", count) for byte, count in counter.most_common(limit)]
