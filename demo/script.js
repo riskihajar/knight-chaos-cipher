@@ -576,7 +576,7 @@ function knightMoveCells(fromIndex, toIndex) {
   return cells;
 }
 
-function renderKnightPath(item) {
+function renderKnightPath(item, before = null, after = null) {
   const material = currentKnightMaterial(item);
   if (!material) {
     els.knightBoard.innerHTML = "";
@@ -589,11 +589,13 @@ function renderKnightPath(item) {
   const permutation = material.permutation;
   const outputIndex = selectedByte;
   const sourceIndex = permutation[outputIndex];
+  const beforeValue = before ? before[sourceIndex].toString(16).padStart(2, "0").toUpperCase() : "--";
+  const afterValue = after ? after[outputIndex].toString(16).padStart(2, "0").toUpperCase() : "--";
   const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
   const moveCells = knightMoveCells(outputIndex, sourceIndex);
   els.knightWrap.classList.toggle("permutation-active", item.step === "KnightPermutation");
   els.knightSummary.textContent = item.step === "KnightPermutation"
-    ? `Round ${item.round}: output posisi ${outputIndex} mengambil source ${sourceIndex} dengan gerak L.`
+    ? `Round ${item.round}: BEFORE[src${sourceIndex.toString().padStart(2, "0")}] 0x${beforeValue} -> AFTER[out${outputIndex.toString().padStart(2, "0")}] 0x${afterValue}.`
     : `Preview gerak L round ${item.round || 1}: output 0 mengambil source ${permutation[0]}.`;
 
   els.knightBoard.innerHTML = "";
@@ -788,7 +790,7 @@ function renderStep() {
     });
     els.matrix.appendChild(cell);
   });
-  renderKnightPath(item);
+  renderKnightPath(item, before, after);
   [...els.timeline.children].forEach((tick, index) => tick.classList.toggle("current", index === stepIndex));
   renderDetail();
 }

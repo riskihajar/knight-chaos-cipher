@@ -139,6 +139,7 @@
 |                                                                            |
 | Knight path round 1:                                                       |
 |   Format papan: Sxx berarti output cell mengambil source xx                |
+|   Mapping aktif: BEFORE[src09] 0x64 -> AFTER[out00] 0x64                   |
 |   S09  S08  S11  S10                                                       |
 |   S02  S12  S15  S14                                                       |
 |   S01  S00  S03  S13                                                       |

@@ -170,9 +170,18 @@ def format_knight_l_move(permutation: tuple[int, ...], output_index: int = 0) ->
     return "\n".join(rows)
 
 
-def render_knight_path(state: DemoState, round_number: int, move_index: int = 0) -> str:
+def render_knight_path(
+    state: DemoState,
+    round_number: int,
+    move_index: int = 0,
+    before: bytes | None = None,
+    after: bytes | None = None,
+) -> str:
     """Render the chess-knight path used by one round permutation."""
     material = state.cipher.round_material[round_number - 1]
+    source_index = material.permutation[move_index]
+    before_value = f"0x{before[source_index]:02X}" if before else "0x--"
+    after_value = f"0x{after[move_index]:02X}" if after else "0x--"
     route = " -> ".join(
         f"out{output_index:02d}<-src{source_index:02d}"
         for output_index, source_index in enumerate(material.permutation)
@@ -181,6 +190,7 @@ def render_knight_path(state: DemoState, round_number: int, move_index: int = 0)
         [
             f"Knight path round {round_number}:",
             "  Format papan: Sxx berarti output cell mengambil source xx",
+            f"  Mapping aktif: BEFORE[src{source_index:02d}] {before_value} -> AFTER[out{move_index:02d}] {after_value}",
             format_knight_board(material.permutation),
             format_knight_l_move(material.permutation, move_index),
             f"  Route: {route}",
@@ -313,7 +323,7 @@ def render_step(state: DemoState, block_index: int, step_index: int) -> str:
         render_timeline(trace, step_index),
     ]
     if int(item["round"]) > 0:
-        body.extend(["", render_knight_path(state, int(item["round"]), 0)])
+        body.extend(["", render_knight_path(state, int(item["round"]), 0, previous, current)])
     return format_panel("Step-by-step Animation", body)
 
 
@@ -414,8 +424,12 @@ def interactive_loop() -> None:
             print(render_security_analysis(state))
             continue
         if command in {"k", "knight"}:
-            active_round = int(state.block_traces[block_index][step_index]["round"]) or 1
-            print(format_panel("Knight Path", [render_knight_path(state, active_round, 0)]))
+            active_trace = state.block_traces[block_index]
+            active_item = active_trace[step_index]
+            active_round = int(active_item["round"]) or 1
+            before = bytes.fromhex(str(active_trace[max(0, step_index - 1)]["hex"]))
+            after = bytes.fromhex(str(active_item["hex"]))
+            print(format_panel("Knight Path", [render_knight_path(state, active_round, 0, before, after)]))
             continue
         if command in {"s", "summary"}:
             print(render_header(state))
