@@ -51,8 +51,8 @@ const els = {
   avalancheValue: document.getElementById("avalancheValue"),
   frequencySummary: document.getElementById("frequencySummary"),
   knightWrap: document.getElementById("knightWrap"),
-  knightBoard: document.getElementById("knightBoard"),
   knightMoveBoard: document.getElementById("knightMoveBoard"),
+  knightStateGrids: document.getElementById("knightStateGrids"),
   knightRoute: document.getElementById("knightRoute"),
   knightSummary: document.getElementById("knightSummary")
 };
@@ -581,8 +581,8 @@ function renderKnightPath(item, before = null, after = null) {
   const isKnightStep = item.step === "KnightPermutation";
   els.knightWrap.classList.toggle("visible", isKnightStep);
   if (!material || !isKnightStep) {
-    els.knightBoard.innerHTML = "";
     els.knightMoveBoard.innerHTML = "";
+    els.knightStateGrids.innerHTML = "";
     els.knightRoute.textContent = "-";
     els.knightSummary.textContent = "Jalur kuda hanya ditampilkan pada step KnightPermutation.";
     els.knightWrap.classList.remove("permutation-active");
@@ -594,22 +594,9 @@ function renderKnightPath(item, before = null, after = null) {
   const sourceIndex = permutation[outputIndex];
   const beforeValue = before ? before[sourceIndex].toString(16).padStart(2, "0").toUpperCase() : "--";
   const afterValue = after ? after[outputIndex].toString(16).padStart(2, "0").toUpperCase() : "--";
-  const activeSource = item.step === "KnightPermutation" ? permutation[selectedByte] : -1;
   const moveCells = knightMoveCells(outputIndex, sourceIndex);
   els.knightWrap.classList.add("permutation-active");
   els.knightSummary.textContent = `Ambil nilai BEFORE posisi ${sourceIndex.toString().padStart(2, "0")} = 0x${beforeValue}, lalu taruh ke AFTER posisi ${outputIndex.toString().padStart(2, "0")} = 0x${afterValue}.`;
-
-  els.knightBoard.innerHTML = "";
-  for (let index = 0; index < 16; index++) {
-    const cell = document.createElement("div");
-    const moveClass = moveCells.has(index) ? ` ${moveCells.get(index)}` : "";
-    cell.className = `knight-cell${index === outputIndex ? " active" : ""}${index === activeSource ? " source-active" : ""}${moveClass}`;
-    cell.dataset.index = index.toString().padStart(2, "0");
-    const source = permutation[index];
-    const sourceValue = before ? before[source].toString(16).padStart(2, "0").toUpperCase() : "--";
-    cell.innerHTML = `<span class="knight-step">AFTER ${index.toString().padStart(2, "0")}</span><span class="knight-source">dari BEFORE ${source.toString().padStart(2, "0")}</span><span class="knight-value">0x${sourceValue}</span>`;
-    els.knightBoard.appendChild(cell);
-  }
 
   els.knightMoveBoard.innerHTML = "";
   for (let index = 0; index < 16; index++) {
@@ -620,6 +607,32 @@ function renderKnightPath(item, before = null, after = null) {
     const label = role === "from" ? "AFTER" : role === "to" ? "BEFORE" : role === "turn" ? "TURN" : role === "leg" ? "LEG" : "";
     cell.textContent = label || ".";
     els.knightMoveBoard.appendChild(cell);
+  }
+
+  els.knightStateGrids.innerHTML = "";
+  const gridSpecs = [
+    { title: "BEFORE", bytes: before, activeIndex: sourceIndex, activeClass: "source", caption: `posisi ${sourceIndex.toString().padStart(2, "0")} = 0x${beforeValue}` },
+    { title: "AFTER", bytes: after, activeIndex: outputIndex, activeClass: "target", caption: `posisi ${outputIndex.toString().padStart(2, "0")} = 0x${afterValue}` }
+  ];
+  for (const spec of gridSpecs) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "knight-state";
+    wrapper.innerHTML = `<span>${spec.title}</span>`;
+    const grid = document.createElement("div");
+    grid.className = "knight-state-grid";
+    for (let index = 0; index < 16; index++) {
+      const cell = document.createElement("div");
+      cell.className = `knight-state-cell${index === spec.activeIndex ? ` ${spec.activeClass}` : ""}`;
+      cell.dataset.index = index.toString().padStart(2, "0");
+      const value = spec.bytes ? spec.bytes[index].toString(16).padStart(2, "0").toUpperCase() : "--";
+      cell.textContent = value;
+      grid.appendChild(cell);
+    }
+    const caption = document.createElement("code");
+    caption.textContent = spec.caption;
+    wrapper.appendChild(grid);
+    wrapper.appendChild(caption);
+    els.knightStateGrids.appendChild(wrapper);
   }
 
   els.knightRoute.textContent = permutation
