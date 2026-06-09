@@ -42,7 +42,14 @@ const els = {
   sboxBox: document.getElementById("sboxBox"),
   blockSelect: document.getElementById("blockSelect"),
   concatVisual: document.getElementById("concatVisual"),
-  concatHex: document.getElementById("concatHex")
+  concatHex: document.getElementById("concatHex"),
+  cipherInput: document.getElementById("cipherInput"),
+  decryptBtn: document.getElementById("decryptBtn"),
+  decryptOutput: document.getElementById("decryptOutput"),
+  plainEntropy: document.getElementById("plainEntropy"),
+  cipherEntropy: document.getElementById("cipherEntropy"),
+  avalancheValue: document.getElementById("avalancheValue"),
+  frequencySummary: document.getElementById("frequencySummary")
 };
 
 const STEP_TEXT = {
@@ -61,13 +68,101 @@ function toHex(bytes) {
 }
 
 function fromHex(hex) {
-  const out = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  const clean = hex.replace(/\s+/g, "");
+  if (clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) {
+    throw new Error("Hex harus berisi pasangan karakter 0-9/A-F.");
+  }
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
   return out;
 }
 
+function sha256Fallback(bytes) {
+  const rightRotate = (value, amount) => (value >>> amount) | (value << (32 - amount));
+  const primes = [];
+  const hash = [];
+  let candidate = 2;
+  while (primes.length < 64) {
+    let isPrime = true;
+    for (let factor = 2; factor * factor <= candidate; factor++) {
+      if (candidate % factor === 0) {
+        isPrime = false;
+        break;
+      }
+    }
+    if (isPrime) {
+      primes.push(candidate);
+      if (hash.length < 8) {
+        hash.push((Math.sqrt(candidate) % 1) * 2 ** 32 | 0);
+      }
+    }
+    candidate++;
+  }
+  const k = primes.map(prime => (Math.cbrt(prime) % 1) * 2 ** 32 | 0);
+  const message = Array.from(bytes);
+  const bitLength = message.length * 8;
+  message.push(0x80);
+  while ((message.length % 64) !== 56) message.push(0);
+  for (let i = 7; i >= 0; i--) message.push((bitLength / 2 ** (i * 8)) & 0xff);
+
+  for (let chunk = 0; chunk < message.length; chunk += 64) {
+    const words = [];
+    for (let i = 0; i < 16; i++) {
+      words[i] = (
+        (message[chunk + i * 4] << 24) |
+        (message[chunk + i * 4 + 1] << 16) |
+        (message[chunk + i * 4 + 2] << 8) |
+        (message[chunk + i * 4 + 3])
+      ) | 0;
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 = rightRotate(words[i - 15], 7) ^ rightRotate(words[i - 15], 18) ^ (words[i - 15] >>> 3);
+      const s1 = rightRotate(words[i - 2], 17) ^ rightRotate(words[i - 2], 19) ^ (words[i - 2] >>> 10);
+      words[i] = (words[i - 16] + s0 + words[i - 7] + s1) | 0;
+    }
+
+    let [a, b, c, d, e, f, g, h] = hash;
+    for (let i = 0; i < 64; i++) {
+      const s1 = rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + s1 + ch + k[i] + words[i]) | 0;
+      const s0 = rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (s0 + maj) | 0;
+      h = g;
+      g = f;
+      f = e;
+      e = (d + temp1) | 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (temp1 + temp2) | 0;
+    }
+    hash[0] = (hash[0] + a) | 0;
+    hash[1] = (hash[1] + b) | 0;
+    hash[2] = (hash[2] + c) | 0;
+    hash[3] = (hash[3] + d) | 0;
+    hash[4] = (hash[4] + e) | 0;
+    hash[5] = (hash[5] + f) | 0;
+    hash[6] = (hash[6] + g) | 0;
+    hash[7] = (hash[7] + h) | 0;
+  }
+
+  const digest = new Uint8Array(32);
+  hash.forEach((word, i) => {
+    digest[i * 4] = (word >>> 24) & 0xff;
+    digest[i * 4 + 1] = (word >>> 16) & 0xff;
+    digest[i * 4 + 2] = (word >>> 8) & 0xff;
+    digest[i * 4 + 3] = word & 0xff;
+  });
+  return digest;
+}
+
 async function sha256(bytes) {
-  return new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  if (globalThis.crypto?.subtle) {
+    return new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes));
+  }
+  return sha256Fallback(bytes);
 }
 
 function concatBytes(...chunks) {
@@ -87,6 +182,41 @@ function intBytes(value) {
 
 function xorBytes(left, right) {
   return Uint8Array.from(left, (value, i) => value ^ right[i]);
+}
+
+function shannonEntropy(bytes) {
+  if (!bytes.length) return 0;
+  const counts = new Map();
+  bytes.forEach(byte => counts.set(byte, (counts.get(byte) || 0) + 1));
+  let entropy = 0;
+  counts.forEach(count => {
+    const probability = count / bytes.length;
+    entropy -= probability * Math.log2(probability);
+  });
+  return entropy;
+}
+
+function bitDifference(left, right) {
+  let total = 0;
+  const length = Math.min(left.length, right.length);
+  for (let i = 0; i < length; i++) {
+    let diff = left[i] ^ right[i];
+    while (diff) {
+      total += diff & 1;
+      diff >>>= 1;
+    }
+  }
+  return total;
+}
+
+function frequencySummary(bytes, limit = 10) {
+  const counts = new Map();
+  bytes.forEach(byte => counts.set(byte, (counts.get(byte) || 0) + 1));
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+    .slice(0, limit)
+    .map(([byte, count]) => `0x${byte.toString(16).padStart(2, "0").toUpperCase()}:${count}`)
+    .join("  ");
 }
 
 function rotl(value, amount) {
@@ -304,6 +434,35 @@ async function encryptAndTrace(plaintext, key) {
   return { ciphertext, traces, blockResults, materials, iv, padded, masterSeed, roundSeeds };
 }
 
+async function encryptBytesOnly(plaintextBytes, key) {
+  const { materials, iv } = await buildMaterials(key);
+  const padded = pkcs7Pad(plaintextBytes);
+  let previous = iv;
+  const ciphertext = new Uint8Array(padded.length);
+  for (let offset = 0; offset < padded.length; offset += BLOCK_SIZE) {
+    const chained = xorBytes(padded.slice(offset, offset + BLOCK_SIZE), previous);
+    const encrypted = encryptBlock(chained, materials);
+    ciphertext.set(encrypted, offset);
+    previous = encrypted;
+  }
+  return ciphertext;
+}
+
+async function renderSecurityAnalysis(plaintext, key, ciphertext) {
+  const plaintextBytes = textEncoder.encode(plaintext);
+  const modified = new Uint8Array(plaintextBytes.length || 1);
+  modified.set(plaintextBytes.length ? plaintextBytes : new Uint8Array([0]));
+  modified[0] ^= 0x01;
+  const changedCiphertext = await encryptBytesOnly(modified, key);
+  const totalBits = Math.min(ciphertext.length, changedCiphertext.length) * 8;
+  const avalanche = totalBits ? (bitDifference(ciphertext, changedCiphertext) / totalBits) * 100 : 0;
+
+  els.plainEntropy.textContent = `${shannonEntropy(plaintextBytes).toFixed(4)} bit/byte`;
+  els.cipherEntropy.textContent = `${shannonEntropy(ciphertext).toFixed(4)} bit/byte`;
+  els.avalancheValue.textContent = `${avalanche.toFixed(2)}%`;
+  els.frequencySummary.textContent = frequencySummary(ciphertext);
+}
+
 function decrypt(ciphertext, materials, iv) {
   let previous = iv;
   const padded = new Uint8Array(ciphertext.length);
@@ -314,6 +473,20 @@ function decrypt(ciphertext, materials, iv) {
     previous = block;
   }
   return textDecoder.decode(pkcs7Unpad(padded));
+}
+
+async function decryptCustomCiphertext() {
+  try {
+    const ciphertext = fromHex(els.cipherInput.value);
+    if (ciphertext.length === 0 || ciphertext.length % BLOCK_SIZE !== 0) {
+      throw new Error("Panjang ciphertext harus kelipatan 16 byte / 32 hex.");
+    }
+    const { materials, iv } = await buildMaterials(els.key.value);
+    const plaintext = decrypt(ciphertext, materials, iv);
+    els.decryptOutput.textContent = `OK → ${plaintext}`;
+  } catch (error) {
+    els.decryptOutput.textContent = `GAGAL → ${error.message}`;
+  }
 }
 
 function renderByteTable() {
@@ -580,11 +753,14 @@ async function run() {
 
   const decrypted = decrypt(result.ciphertext, result.materials, result.iv);
   els.cipherHex.textContent = toHex(result.ciphertext);
+  els.cipherInput.value = toHex(result.ciphertext).toUpperCase();
   els.decryptCheck.textContent = decrypted === els.plaintext.value ? "OK - plaintext kembali utuh" : "Gagal";
+  els.decryptOutput.textContent = `OK → ${decrypted}`;
   renderByteTable();
   renderTimeline();
   renderStep();
   renderConcat();
+  await renderSecurityAnalysis(els.plaintext.value, els.key.value, result.ciphertext);
 }
 
 function stopTimer() {
@@ -594,6 +770,7 @@ function stopTimer() {
 }
 
 els.encryptBtn.addEventListener("click", run);
+els.decryptBtn.addEventListener("click", decryptCustomCiphertext);
 els.blockSelect.addEventListener("change", () => {
   currentBlock = parseInt(els.blockSelect.value);
   switchBlock();

@@ -172,6 +172,45 @@ textarea {
   resize: vertical;
 }
 
+.decrypt-lab {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.decrypt-lab > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.decrypt-lab p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.decrypt-lab textarea {
+  min-height: 92px;
+  margin-bottom: 8px;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.decrypt-lab button {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.decrypt-lab code {
+  max-height: 120px;
+  overflow: auto;
+}
+
 .toolbar {
   display: grid;
   grid-template-columns: 1fr;
@@ -591,4 +630,58 @@ code {
   border: 0;
   background: transparent;
   word-break: break-all;
+}
+
+.analysisWrap {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-bottom: 18px;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.analysis-grid > div,
+.analysis-frequency {
+  border: 1px solid var(--line);
+  background: #000;
+  padding: 8px;
+}
+
+.analysis-grid span,
+.analysis-frequency span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.analysis-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.analysis-grid small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.analysis-frequency {
+  margin-top: 8px;
+}
+
+.analysis-frequency code {
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
 }

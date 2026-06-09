@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Knight-Chaos Cipher Interactive Demo</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -52,6 +53,14 @@
         <div class="output">
           <span>Decryption Check</span>
           <code id="decryptCheck">-</code>
+        </div>
+
+        <div class="decrypt-lab">
+          <span>Decrypt / Uji Ciphertext</span>
+          <p>Edit ciphertext hex di bawah, lalu decrypt dengan key yang sedang dipakai.</p>
+          <textarea id="cipherInput" spellcheck="false" placeholder="Ciphertext hex akan muncul setelah Encrypt"></textarea>
+          <button id="decryptBtn" class="secondary">Decrypt Hex</button>
+          <code id="decryptOutput">-</code>
         </div>
       </div>
     </section>
@@ -113,6 +122,31 @@
         <div class="concat-result">
           <span>CIPHERTEXT FINAL (gabungan semua blok)</span>
           <code id="concatHex">-</code>
+        </div>
+      </div>
+
+      <div class="analysisWrap">
+        <p class="eyebrow">Security Analysis</p>
+        <div class="analysis-grid">
+          <div>
+            <span>Plaintext Entropy</span>
+            <strong id="plainEntropy">-</strong>
+            <small>Keragaman byte sebelum enkripsi.</small>
+          </div>
+          <div>
+            <span>Ciphertext Entropy</span>
+            <strong id="cipherEntropy">-</strong>
+            <small>Keragaman byte setelah enkripsi.</small>
+          </div>
+          <div>
+            <span>Avalanche Effect</span>
+            <strong id="avalancheValue">-</strong>
+            <small>Perubahan ciphertext saat 1 bit plaintext diubah.</small>
+          </div>
+        </div>
+        <div class="analysis-frequency">
+          <span>Top Byte Frequency</span>
+          <code id="frequencySummary">-</code>
         </div>
       </div>
     </section>
