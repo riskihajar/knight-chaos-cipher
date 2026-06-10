@@ -15,6 +15,7 @@ let lastPlainBlock = null;
 let lastMasterSeed = null;
 let lastRoundSeeds = null;
 let selectedByte = 0;
+let currentSboxContext = null;
 
 const els = {
   plaintext: document.getElementById("plaintext"),
@@ -38,6 +39,12 @@ const els = {
   roundKeyDisplay: document.getElementById("roundKeyDisplay"),
   sboxDisplay: document.getElementById("sboxDisplay"),
   sboxBox: document.getElementById("sboxBox"),
+  openSboxBtn: document.getElementById("openSboxBtn"),
+  sboxModal: document.getElementById("sboxModal"),
+  closeSboxBtn: document.getElementById("closeSboxBtn"),
+  sboxModalTitle: document.getElementById("sboxModalTitle"),
+  sboxModalHint: document.getElementById("sboxModalHint"),
+  sboxGrid: document.getElementById("sboxGrid"),
   blockSelect: document.getElementById("blockSelect"),
   concatVisual: document.getElementById("concatVisual"),
   concatHex: document.getElementById("concatHex"),
@@ -636,6 +643,54 @@ function toBin(val) {
   return val.toString(2).padStart(8, "0");
 }
 
+function renderSboxPopup() {
+  if (!currentSboxContext) {
+    els.sboxGrid.innerHTML = "";
+    els.sboxModalTitle.textContent = "S-Box Index 0-255";
+    els.sboxModalHint.textContent = "Jalankan step ChaoticSubBytes untuk melihat S-Box round aktif.";
+    return;
+  }
+
+  const { sbox, inputIndex, outputValue, round, byteIndex } = currentSboxContext;
+  els.sboxModalTitle.textContent = `S-Box Index 0-255 · Round ${round}`;
+  els.sboxModalHint.textContent =
+    `Byte aktif = byte ${byteIndex}. Input byte-nya 0x${inputIndex.toString(16).padStart(2, "0").toUpperCase()} ` +
+    `(desimal ${inputIndex}), jadi lookup masuk ke indeks ${inputIndex}. ` +
+    `Output-nya 0x${outputValue.toString(16).padStart(2, "0").toUpperCase()} (desimal ${outputValue}).`;
+
+  els.sboxGrid.innerHTML = "";
+  for (let index = 0; index < 256; index++) {
+    const cell = document.createElement("div");
+    cell.className = `sboxCell${index === inputIndex ? " active" : ""}`;
+    if (index === inputIndex) cell.dataset.byte = `BYTE ${byteIndex}`;
+
+    const hexIndex = document.createElement("strong");
+    hexIndex.textContent = index.toString(16).padStart(2, "0").toUpperCase();
+
+    const decIndex = document.createElement("span");
+    decIndex.textContent = `dec ${index}`;
+
+    const value = document.createElement("code");
+    value.textContent = `→ ${sbox[index].toString(16).padStart(2, "0").toUpperCase()}`;
+
+    cell.appendChild(hexIndex);
+    cell.appendChild(decIndex);
+    cell.appendChild(value);
+    els.sboxGrid.appendChild(cell);
+  }
+}
+
+function openSboxModal() {
+  renderSboxPopup();
+  els.sboxModal.classList.add("open");
+  els.sboxModal.setAttribute("aria-hidden", "false");
+}
+
+function closeSboxModal() {
+  els.sboxModal.classList.remove("open");
+  els.sboxModal.setAttribute("aria-hidden", "true");
+}
+
 function renderDetail() {
   if (!lastMaterials || !trace.length) return;
   const item = trace[stepIndex];
@@ -714,12 +769,21 @@ function renderDetail() {
       calc += `S-Box[${b0Before}] = ${b0After}\n`;
       calc += `Output: 0x${b0After.toString(16).padStart(2, "0").toUpperCase()} (desimal ${b0After})`;
       els.sboxBox.style.display = "block";
+      currentSboxContext = {
+        sbox: mat.sbox,
+        inputIndex: b0Before,
+        outputValue: b0After,
+        round,
+        byteIndex: idx
+      };
       const entries = [];
       for (let i = 0; i < 16; i++) {
         const v = before[i];
-        entries.push(`[${v.toString(16).padStart(2, "0")}]→${mat.sbox[v].toString(16).padStart(2, "0")}`);
+        const marker = i === idx ? `byte${i}:` : "";
+        entries.push(`${marker}[${v.toString(16).padStart(2, "0")}]→${mat.sbox[v].toString(16).padStart(2, "0")}`);
       }
       els.sboxDisplay.textContent = entries.join("  ");
+      if (els.sboxModal.classList.contains("open")) renderSboxPopup();
       break;
     case "KnightPermutation":
       const srcIdx = mat.permutation[idx];
@@ -759,7 +823,10 @@ function renderDetail() {
 
   els.manualCalc.textContent = calc;
 
-  if (item.step !== "ChaoticSubBytes") els.sboxBox.style.display = "none";
+  if (item.step !== "ChaoticSubBytes") {
+    els.sboxBox.style.display = "none";
+    currentSboxContext = null;
+  }
 }
 
 function renderStep() {
@@ -896,6 +963,14 @@ function stopTimer() {
 
 els.encryptBtn.addEventListener("click", run);
 els.decryptBtn.addEventListener("click", decryptCustomCiphertext);
+els.openSboxBtn.addEventListener("click", openSboxModal);
+els.closeSboxBtn.addEventListener("click", closeSboxModal);
+els.sboxModal.addEventListener("click", event => {
+  if (event.target === els.sboxModal) closeSboxModal();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && els.sboxModal.classList.contains("open")) closeSboxModal();
+});
 els.blockSelect.addEventListener("change", () => {
   currentBlock = parseInt(els.blockSelect.value);
   switchBlock();

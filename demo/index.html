@@ -186,13 +186,37 @@
             <code id="roundKeyDisplay">-</code>
           </div>
           <div class="detail-box" id="sboxBox" style="display:none">
-            <span>S-BOX (Cuplikan)</span>
+            <div class="detail-title-row">
+              <span>S-BOX (Cuplikan)</span>
+              <button id="openSboxBtn" class="secondary mini" type="button">Lihat 0-255</button>
+            </div>
             <code id="sboxDisplay">-</code>
           </div>
         </div>
       </div>
     </aside>
   </main>
+
+  <div class="modal" id="sboxModal" aria-hidden="true">
+    <div class="modalPanel" role="dialog" aria-modal="true" aria-labelledby="sboxModalTitle">
+      <div class="modalHeader">
+        <div>
+          <p class="eyebrow">ChaoticSubBytes Lookup Table</p>
+          <h2 id="sboxModalTitle">S-Box Index 0-255</h2>
+        </div>
+        <button id="closeSboxBtn" class="secondary mini" type="button">Tutup</button>
+      </div>
+      <p class="modalHint" id="sboxModalHint">
+        Setiap byte input menjadi indeks S-Box. Indeks ditulis dalam hex 00-FF dan desimal 0-255.
+      </p>
+      <div class="sboxLegend">
+        <span><i></i> indeks input aktif</span>
+        <span>Format: index hex / index desimal → output hex</span>
+      </div>
+      <div class="sboxGrid" id="sboxGrid"></div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

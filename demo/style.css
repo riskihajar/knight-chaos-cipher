@@ -243,6 +243,12 @@ button.secondary {
   background: #151515;
 }
 
+button.mini {
+  padding: 6px 8px;
+  font-size: 10px;
+  line-height: 1;
+}
+
 .output {
   display: grid;
   gap: 6px;
@@ -663,6 +669,18 @@ code {
   text-transform: uppercase;
 }
 
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.detail-title-row span {
+  margin-bottom: 0;
+}
+
 .detail-box table {
   width: 100%;
   border-collapse: collapse;
@@ -838,4 +856,164 @@ code {
   border: 0;
   background: transparent;
   font-size: 11px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modalPanel {
+  width: min(980px, 100%);
+  max-height: min(88vh, 760px);
+  border: 1px solid var(--line-strong);
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  background: var(--panel);
+}
+
+.modalHint {
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sboxLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sboxLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sboxLegend i {
+  width: 11px;
+  height: 11px;
+  border: 1px solid #050505;
+  background: var(--ink);
+  display: inline-block;
+}
+
+.sboxGrid {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(48px, 1fr));
+  gap: 0;
+  overflow: auto;
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+}
+
+.sboxCell {
+  min-height: 48px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #050505;
+  color: var(--ink);
+  padding: 5px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  font-size: 10px;
+  line-height: 1.1;
+  position: relative;
+}
+
+.sboxCell strong,
+.sboxCell span,
+.sboxCell code {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: inherit;
+  line-height: inherit;
+  overflow-wrap: normal;
+}
+
+.sboxCell strong {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.sboxCell span {
+  color: var(--muted);
+}
+
+.sboxCell code {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.sboxCell.active {
+  background: var(--ink);
+  color: #050505;
+  padding-top: 16px;
+}
+
+.sboxCell.active strong,
+.sboxCell.active span,
+.sboxCell.active code {
+  color: #050505;
+}
+
+.sboxCell.active::before {
+  content: attr(data-byte);
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  right: 4px;
+  color: #050505;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .modal {
+    padding: 8px;
+  }
+
+  .modalHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sboxGrid {
+    grid-template-columns: repeat(16, 52px);
+  }
 }
