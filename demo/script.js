@@ -800,12 +800,12 @@ function renderDetail() {
       calc += `Sesudah: ${toBin(b0After)} (0x${b0After.toString(16).padStart(2, "0").toUpperCase()})`;
       break;
     case "ByteDiffusion":
-      const carry = idx === 0 ? mat.roundKey[0] : after[idx - 1] !== undefined ? fromHex(item.hex)[idx - 1] : 0;
-      const neighbor = idx > 0 ? before[idx - 1] : mat.roundKey[15];
+      const carry = idx === 0 ? mat.roundKey[0] : after[idx - 1];
+      const neighbor = idx > 0 ? after[idx - 1] : mat.roundKey[15];
       const keyMix = (mat.roundKey[idx] + idx * 13) & 0xff;
       calc = `Diffuse byte[${idx}]:\n`;
       calc += `input[${idx}]  = 0x${b0Before.toString(16).padStart(2, "0").toUpperCase()}\n`;
-      calc += `carry     = 0x${(idx === 0 ? mat.roundKey[0] : fromHex(prev.hex)[idx]).toString(16).padStart(2, "0").toUpperCase()}\n`;
+      calc += `carry     = 0x${carry.toString(16).padStart(2, "0").toUpperCase()}\n`;
       calc += `neighbor  = 0x${neighbor.toString(16).padStart(2, "0").toUpperCase()}\n`;
       calc += `key_mix   = (key[${idx}]+${idx}×13) & FF = 0x${keyMix.toString(16).padStart(2, "0").toUpperCase()}\n`;
       calc += `XOR semua → 0x${b0After.toString(16).padStart(2, "0").toUpperCase()}`;
