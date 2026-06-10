@@ -201,18 +201,19 @@
     <div class="modalPanel" role="dialog" aria-modal="true" aria-labelledby="sboxModalTitle">
       <div class="modalHeader">
         <div>
-          <p class="eyebrow">ChaoticSubBytes Lookup Table</p>
-          <h2 id="sboxModalTitle">S-Box Index 0-255</h2>
+          <p class="eyebrow">ChaoticSubBytes Output Table</p>
+          <h2 id="sboxModalTitle">Tabel Output S-Box</h2>
         </div>
         <button id="closeSboxBtn" class="secondary mini" type="button">Tutup</button>
       </div>
       <p class="modalHint" id="sboxModalHint">
-        Setiap byte input menjadi indeks S-Box. Indeks ditulis dalam hex 00-FF dan desimal 0-255.
+        Tabel ini menampilkan isi S-Box. Setiap posisi S-Box[index] berisi output substitusi.
       </p>
       <div class="sboxLegend">
-        <span><i></i> indeks input aktif</span>
-        <span>Format: index hex / index desimal → output hex</span>
+        <span><i></i> S-Box[index] aktif</span>
+        <span>Format sel: S-Box[index desimal] = output desimal</span>
       </div>
+      <div class="sboxActiveDetail" id="sboxActiveDetail">-</div>
       <div class="sboxGrid" id="sboxGrid"></div>
     </div>
   </div>

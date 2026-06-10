@@ -915,6 +915,26 @@ code {
   text-transform: uppercase;
 }
 
+.sboxActiveDetail {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #050505;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.sboxActiveDetail strong,
+.sboxActiveDetail span {
+  display: block;
+  border: 1px solid var(--line);
+  padding: 7px;
+  background: #000;
+}
+
 .sboxLegend span {
   display: inline-flex;
   align-items: center;
@@ -931,7 +951,7 @@ code {
 
 .sboxGrid {
   display: grid;
-  grid-template-columns: repeat(16, minmax(48px, 1fr));
+  grid-template-columns: repeat(16, minmax(44px, 1fr));
   gap: 0;
   overflow: auto;
   border-left: 1px solid var(--line);
@@ -939,7 +959,7 @@ code {
 }
 
 .sboxCell {
-  min-height: 48px;
+  min-height: 44px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: #050505;
@@ -947,7 +967,7 @@ code {
   padding: 5px;
   display: grid;
   align-content: center;
-  gap: 2px;
+  gap: 3px;
   font-size: 10px;
   line-height: 1.1;
   position: relative;
@@ -977,6 +997,7 @@ code {
 .sboxCell code {
   color: var(--ink);
   font-weight: 900;
+  font-size: 11px;
 }
 
 .sboxCell.active {
@@ -1013,7 +1034,11 @@ code {
     flex-direction: column;
   }
 
+  .sboxActiveDetail {
+    grid-template-columns: 1fr;
+  }
+
   .sboxGrid {
-    grid-template-columns: repeat(16, 52px);
+    grid-template-columns: repeat(16, 48px);
   }
 }

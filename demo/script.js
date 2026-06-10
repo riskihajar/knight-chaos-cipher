@@ -44,6 +44,7 @@ const els = {
   closeSboxBtn: document.getElementById("closeSboxBtn"),
   sboxModalTitle: document.getElementById("sboxModalTitle"),
   sboxModalHint: document.getElementById("sboxModalHint"),
+  sboxActiveDetail: document.getElementById("sboxActiveDetail"),
   sboxGrid: document.getElementById("sboxGrid"),
   blockSelect: document.getElementById("blockSelect"),
   concatVisual: document.getElementById("concatVisual"),
@@ -646,17 +647,21 @@ function toBin(val) {
 function renderSboxPopup() {
   if (!currentSboxContext) {
     els.sboxGrid.innerHTML = "";
-    els.sboxModalTitle.textContent = "S-Box Index 0-255";
-    els.sboxModalHint.textContent = "Jalankan step ChaoticSubBytes untuk melihat S-Box round aktif.";
+    els.sboxModalTitle.textContent = "Tabel Output S-Box";
+    els.sboxModalHint.textContent = "Jalankan step ChaoticSubBytes untuk melihat tabel output S-Box round aktif.";
+    els.sboxActiveDetail.textContent = "-";
     return;
   }
 
   const { sbox, inputIndex, outputValue, round, byteIndex } = currentSboxContext;
-  els.sboxModalTitle.textContent = `S-Box Index 0-255 · Round ${round}`;
+  els.sboxModalTitle.textContent = `Tabel Output S-Box · Round ${round}`;
   els.sboxModalHint.textContent =
-    `Byte aktif = byte ${byteIndex}. Input byte-nya 0x${inputIndex.toString(16).padStart(2, "0").toUpperCase()} ` +
-    `(desimal ${inputIndex}), jadi lookup masuk ke indeks ${inputIndex}. ` +
-    `Output-nya 0x${outputValue.toString(16).padStart(2, "0").toUpperCase()} (desimal ${outputValue}).`;
+    `Byte aktif ${byteIndex} bernilai 0x${inputIndex.toString(16).padStart(2, "0").toUpperCase()} ` +
+    `(desimal ${inputIndex}), jadi yang dibaca adalah isi S-Box[${inputIndex}].`;
+  els.sboxActiveDetail.innerHTML =
+    `<strong>Byte aktif ${byteIndex}</strong>` +
+    `<span>Index tabel: ${inputIndex}</span>` +
+    `<span>Output tabel: S-Box[${inputIndex}] = ${outputValue} desimal = 0x${outputValue.toString(16).padStart(2, "0").toUpperCase()}</span>`;
 
   els.sboxGrid.innerHTML = "";
   for (let index = 0; index < 256; index++) {
@@ -665,16 +670,12 @@ function renderSboxPopup() {
     if (index === inputIndex) cell.dataset.byte = `BYTE ${byteIndex}`;
 
     const hexIndex = document.createElement("strong");
-    hexIndex.textContent = index.toString(16).padStart(2, "0").toUpperCase();
-
-    const decIndex = document.createElement("span");
-    decIndex.textContent = `dec ${index}`;
+    hexIndex.textContent = `S[${index}]`;
 
     const value = document.createElement("code");
-    value.textContent = `→ ${sbox[index].toString(16).padStart(2, "0").toUpperCase()}`;
+    value.textContent = `= ${sbox[index]}`;
 
     cell.appendChild(hexIndex);
-    cell.appendChild(decIndex);
     cell.appendChild(value);
     els.sboxGrid.appendChild(cell);
   }
